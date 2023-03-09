@@ -250,113 +250,95 @@ module FreeGroupoid where
       Iso.rightInv e p = invr p a
       Iso.leftInv e p = invl p a
 
-  -- packed elimination principle to an equivalence
-  module ElimEquiv
-    {X : Type ℓ₀} {x : X} (R : Graph X ℓ₁) (A : {y : X} → FreeGroupoid R x y → Type ℓ₂)
-    (f[] : A ([] {x = x}))
-    (f≃ : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A p ≃ A (p ∷+ a))
-    where
-
-    f : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A p → A (p ∷+ a)
-    f p a k = equivFun (f≃ p a) k
-    f⁻ : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A (p ∷+ a) → A p
-    f⁻ p a k = invEq (f≃ p a) k
-    g : {y z : X} (p : FreeGroupoid R x y) (a : R z y) → A p → A (p ∷- a)
-    g p a k =  f⁻ (p ∷- a) a (subst⁻ A (invl p a) k)
-    g⁻ : {y z : X} (p : FreeGroupoid R x y) (a : R z y) → A (p ∷- a) → A p
-    g⁻ p a k = subst A (invl p a) (f (p ∷- a) a k)
-    g≃ : {y z : X} (p : FreeGroupoid R x y) (a : R z y) → A p ≃ A (p ∷- a)
-    g≃ p a = isoToEquiv e
+    -- packed elimination principle to an equivalence
+    module ElimEquiv
+      {x : X} (A : {y : X} → x ↝! y → Type ℓ₂)
+      (f[] : A ([] {x = x}))
+      (f≃ : {y z : X} (p : x ↝! y) (a : y ↝ z) → A p ≃ A (p ∷+ a))
       where
-      e : Iso (A p) (A (p ∷- a))
-      Iso.fun e k = g p a k
-      Iso.inv e k = g⁻ p a k
-      Iso.rightInv e k =
-        g p a (g⁻ p a k) ≡⟨ refl ⟩
-        f⁻ (p ∷- a) a (subst⁻ A (invl p a) (subst A (invl p a) (f (p ∷- a) a k))) ≡⟨ cong (f⁻ (p ∷- a) a) (subst⁻Subst A (invl p a) _) ⟩
-        f⁻ (p ∷- a) a (f (p ∷- a) a k)                                            ≡⟨ retEq (f≃ (p ∷- a) a) k ⟩
-        k ∎
-      Iso.leftInv e k =
-        g⁻ p a (g p a k) ≡⟨ refl ⟩
-        subst A (invl p a) (f (p ∷- a) a (f⁻ (p ∷- a) a (subst⁻ A (invl p a) k))) ≡⟨ cong (subst A (invl p a)) (secEq (f≃ (p ∷- a) a) _) ⟩
-        subst A (invl p a) (subst⁻ A (invl p a) k)                                ≡⟨ substSubst⁻ A (invl p a) k ⟩
-        k ∎
-    -- h : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A p → A (p ∷+ a)
-    -- h p a k = g⁻ (p ∷+ a) a (subst⁻ A (invr p a) k)
-    -- h⁻ : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A (p ∷+ a) → A p
-    -- h⁻ p a k = subst A (invr p a) (g (p ∷+ a) a k)
-    -- h≃ : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → A p ≃ A (p ∷+ a)
-    -- h≃ p a = isoToEquiv e
-      -- where
-      -- e : Iso (A p) (A (p ∷+ a))
-      -- Iso.fun e k = h p a k
-      -- Iso.inv e k = h⁻ p a k
-      -- Iso.rightInv e k = cong (g⁻ (p ∷+ a) a) (subst⁻Subst A (invr p a) _) ∙ retEq (g≃ (p ∷+ a) a) k
-      -- Iso.leftInv e k = cong (subst A (invr p a)) (secEq (g≃ (p ∷+ a) a) _) ∙ substSubst⁻ A (invr p a) k
-    -- h≡f : {y z : X} (p : FreeGroupoid R x y) (a : R y z) → h p a ≡ f p a
-    -- h≡f p a = funExt λ k →
-      -- h p a k ≡⟨ refl ⟩
-      -- subst A (invl (p ∷+ a) a) (f (p ∷+ a ∷- a) a (subst⁻ A (invr p a) k)) ≡⟨ cong (subst A (invl (p ∷+ a) a)) (sym {!!}) ⟩
-      -- subst A (invl (p ∷+ a) a) (subst⁻ A (invl (p ∷+ a) a) (f p a k)) ≡⟨ substSubst⁻ A (invl (p ∷+ a) a) _ ⟩
-      -- f p a k ∎
-    fg : {y z : X} (p : FreeGroupoid R x y) (a : R z y) (k : A p) → subst A (invl p a) (f (p ∷- a) a (g p a k)) ≡ k
-    fg p a k = retEq (g≃ p a) k
-    gf : {y z : X} (p : FreeGroupoid R x y) (a : R y z) (k : A p) → subst A (invr p a) (g (p ∷+ a) a (f p a k)) ≡ k
-    gf p a k = lem -- secEq f through h- = f-
-      where
-      nat : {y z : X} (p q : FreeGroupoid R x y) (P : p ≡ q) (a : R y z) (k : A (p ∷+ a)) → subst A P (f⁻ p a k) ≡ f⁻ q a (subst A (cong (λ p → p ∷+ a) P) k)
-      nat p q P a k = J (λ q P → subst A P (f⁻ p a k) ≡ f⁻ q a (subst A (cong (λ p → p ∷+ a) P) k)) (substRefl {B = A} (f⁻ p a k) ∙ cong (f⁻ p a) (sym (substRefl {B = A} k))) P
-      zigzag : sym (invl (p ∷+ a) a) ∙ cong (λ p → p ∷+ a) (invr p a) ≡ refl
-      zigzag =
-        sym (invl (p ∷+ a) a) ∙ cong (λ p → p ∷+ a) (invr p a) ≡⟨ cong (_∙_ (sym (invl (p ∷+ a) a))) (coh p a) ⟩
-        sym (invl (p ∷+ a) a) ∙ invl (p ∷+ a) a ≡⟨ lCancel _ ⟩
-        refl ∎
-      lem : subst A (invr p a) (f⁻ (p ∷+ a ∷- a) a (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡ k
-      lem =
-        subst A (invr p a) (f⁻ (p ∷+ a ∷- a) a (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡⟨ nat _ _ _ _ _ ⟩
-        f⁻ p a (subst A (cong (λ p → p ∷+ a) (invr p a)) (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡⟨ cong (f⁻ p a) (sym (substComposite A _ _ _) ∙ funExt⁻ (cong (subst A) zigzag) (f p a k) ∙ substRefl {B = A} (f p a k)) ⟩
-        f⁻ p a (f p a k) ≡⟨ retEq (f≃ p a) k ⟩
-        k ∎
-    -- fgf : {y z : X} (p : FreeGroupoid R x y) (a : R y z) (k : A p) → {!gf p a k!} ≡ fg (p ∷+ a) a (f p a k)
-    -- fgf p a k = {!!}
 
-    fIsoOver : {y z : X} (a : R y z) → IsoOver (compIsoR x a) A A
-    IsoOver.fun (fIsoOver a) p k = f p a k
-    IsoOver.inv (fIsoOver a) p k = g p a k
-    IsoOver.rightInv (fIsoOver {y} {z} a) p k = toPathP (fg p a k)
-    IsoOver.leftInv (fIsoOver a) p k = toPathP (gf p a k)
+      f : {y z : X} (p : x ↝! y) (a : y ↝ z) → A p → A (p ∷+ a)
+      f p a k = equivFun (f≃ p a) k
+      f⁻ : {y z : X} (p : x ↝! y) (a : y ↝ z) → A (p ∷+ a) → A p
+      f⁻ p a k = invEq (f≃ p a) k
+      g : {y z : X} (p : x ↝! y) (a : z ↝ y) → A p → A (p ∷- a)
+      g p a k =  f⁻ (p ∷- a) a (subst⁻ A (invl p a) k)
+      g⁻ : {y z : X} (p : x ↝! y) (a : z ↝ y) → A (p ∷- a) → A p
+      g⁻ p a k = subst A (invl p a) (f (p ∷- a) a k)
+      g≃ : {y z : X} (p : x ↝! y) (a : z ↝ y) → A p ≃ A (p ∷- a)
+      g≃ p a = isoToEquiv e
+        where
+        e : Iso (A p) (A (p ∷- a))
+        Iso.fun e k = g p a k
+        Iso.inv e k = g⁻ p a k
+        Iso.rightInv e k =
+          g p a (g⁻ p a k) ≡⟨ refl ⟩
+          f⁻ (p ∷- a) a (subst⁻ A (invl p a) (subst A (invl p a) (f (p ∷- a) a k))) ≡⟨ cong (f⁻ (p ∷- a) a) (subst⁻Subst A (invl p a) _) ⟩
+          f⁻ (p ∷- a) a (f (p ∷- a) a k)                                            ≡⟨ retEq (f≃ (p ∷- a) a) k ⟩
+          k ∎
+        Iso.leftInv e k =
+          g⁻ p a (g p a k) ≡⟨ refl ⟩
+          subst A (invl p a) (f (p ∷- a) a (f⁻ (p ∷- a) a (subst⁻ A (invl p a) k))) ≡⟨ cong (subst A (invl p a)) (secEq (f≃ (p ∷- a) a) _) ⟩
+          subst A (invl p a) (subst⁻ A (invl p a) k)                                ≡⟨ substSubst⁻ A (invl p a) k ⟩
+          k ∎
+      fg : {y z : X} (p : x ↝! y) (a : z ↝ y) (k : A p) → subst A (invl p a) (f (p ∷- a) a (g p a k)) ≡ k
+      fg p a k = retEq (g≃ p a) k
+      gf : {y z : X} (p : x ↝! y) (a : y ↝ z) (k : A p) → subst A (invr p a) (g (p ∷+ a) a (f p a k)) ≡ k
+      gf p a k = lem -- secEq f through h- = f-
+        where
+        nat : {y z : X} (p q : x ↝! y) (P : p ≡ q) (a : y ↝ z) (k : A (p ∷+ a)) → subst A P (f⁻ p a k) ≡ f⁻ q a (subst A (cong (λ p → p ∷+ a) P) k)
+        nat p q P a k = J (λ q P → subst A P (f⁻ p a k) ≡ f⁻ q a (subst A (cong (λ p → p ∷+ a) P) k)) (substRefl {B = A} (f⁻ p a k) ∙ cong (f⁻ p a) (sym (substRefl {B = A} k))) P
+        zigzag : sym (invl (p ∷+ a) a) ∙ cong (λ p → p ∷+ a) (invr p a) ≡ refl
+        zigzag =
+          sym (invl (p ∷+ a) a) ∙ cong (λ p → p ∷+ a) (invr p a) ≡⟨ cong (_∙_ (sym (invl (p ∷+ a) a))) (coh p a) ⟩
+          sym (invl (p ∷+ a) a) ∙ invl (p ∷+ a) a ≡⟨ lCancel _ ⟩
+          refl ∎
+        lem : subst A (invr p a) (f⁻ (p ∷+ a ∷- a) a (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡ k
+        lem =
+          subst A (invr p a) (f⁻ (p ∷+ a ∷- a) a (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡⟨ nat _ _ _ _ _ ⟩
+          f⁻ p a (subst A (cong (λ p → p ∷+ a) (invr p a)) (subst⁻ A (invl (p ∷+ a) a) (f p a k))) ≡⟨ cong (f⁻ p a) (sym (substComposite A _ _ _) ∙ funExt⁻ (cong (subst A) zigzag) (f p a k) ∙ substRefl {B = A} (f p a k)) ⟩
+          f⁻ p a (f p a k) ≡⟨ retEq (f≃ p a) k ⟩
+          k ∎
+      -- fgf : {y z : X} (p : x ↝! y) (a : y ↝ z) (k : A p) → {!gf p a k!} ≡ fg (p ∷+ a) a (f p a k)
+      -- fgf p a k = {!!}
+  
+      fIsoOver : {y z : X} (a : y ↝ z) → IsoOver (compIsoR x a) A A
+      IsoOver.fun (fIsoOver a) p k = f p a k
+      IsoOver.inv (fIsoOver a) p k = g p a k
+      IsoOver.rightInv (fIsoOver {y} {z} a) p k = toPathP (fg p a k)
+      IsoOver.leftInv (fIsoOver a) p k = toPathP (gf p a k)
+  
+      fHAEquivOver0 : {y z : X} (a : y ↝ z) → HAEquivOver A A (iso→HAEquiv (compIsoR x a))
+      fHAEquivOver0 a = IsoOver.fun (fIsoOver a) , IsoOver→HAEquivOver (fIsoOver a)
 
-    fHAEquivOver0 : {y z : X} (a : R y z) → HAEquivOver A A (iso→HAEquiv (compIsoR x a))
-    fHAEquivOver0 a = IsoOver.fun (fIsoOver a) , IsoOver→HAEquivOver (fIsoOver a)
+      -- TODO: is there a more direct way to perform this??? (from the above data...)
+      fHAEquivOver : {y z : X} (a : y ↝ z) → HAEquivOver A A (compHAEquivR x a)
+      fHAEquivOver a = fun , isHAE'
+        where
+        fun : mapOver (compIsoR x a .Iso.fun) A A
+        fun = IsoOver.fun (fIsoOver a)
+        isHAE : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A fun
+        isHAE = IsoOver→HAEquivOver (fIsoOver a)
+        lem : iso→HAEquiv (compIsoR x a) ≡ compHAEquivR x a
+        lem = Σ≡Prop (λ f → isPropIsHAEquiv {f = f}) refl
+        lem' : PathP
+          (λ i → (fun : mapOver (lem i .fst) A A) → Type _)
+          (isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A)
+          (isHAEquivOver (compHAEquivR x a) A A)
+        lem' = funExt⁻ (funExt⁻ (cong isHAEquivOver lem) A) A
+        lem'' : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A ≡ isHAEquivOver (compHAEquivR x a) A A
+        lem'' = sym (transportRefl _) ∙ fromPathP lem'
+        abstract
+          isHAE' : isHAEquivOver (compHAEquivR x a) A A fun
+          isHAE' = transport (funExt⁻ lem'' fun) isHAE
 
-    -- TODO: is there a more direct way to perform this??? (from the above data...)
-    fHAEquivOver : {y z : X} (a : R y z) → HAEquivOver A A (compHAEquivR x a)
-    fHAEquivOver a = fun , isHAE'
-      where
-      fun : mapOver (compIsoR x a .Iso.fun) A A
-      fun = IsoOver.fun (fIsoOver a)
-      isHAE : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A fun
-      isHAE = IsoOver→HAEquivOver (fIsoOver a)
-      lem : iso→HAEquiv (compIsoR x a) ≡ compHAEquivR x a
-      lem = Σ≡Prop (λ f → isPropIsHAEquiv {f = f}) refl
-      lem' : PathP
-        (λ i → (fun : mapOver (lem i .fst) A A) → Type (ℓ-max (ℓ-max ℓ₀ ℓ₁) ℓ₂))
-        (isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A)
-        (isHAEquivOver (compHAEquivR x a) A A)
-      lem' = funExt⁻ (funExt⁻ (cong isHAEquivOver lem) A) A
-      lem'' : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A ≡ isHAEquivOver (compHAEquivR x a) A A
-      lem'' = sym (transportRefl _) ∙ fromPathP lem'
-      abstract
-        isHAE' : isHAEquivOver (compHAEquivR x a) A A fun
-        isHAE' = transport (funExt⁻ lem'' fun) isHAE
+      elim≃ : {y : X} (p : x ↝! y) → A p
+      elim≃ = elim (λ {y} p → A p)
+        f[]
+        (λ {y} {z} {p} k a → fst (fHAEquivOver a) p k)
+        (λ {y} {z} {p} k a → isHAEquivOver.inv (snd (fHAEquivOver a)) p k)
+        (λ {y} {z} {p} k a → isHAEquivOver.rinv (snd (fHAEquivOver a)) p k)
+        (λ {y} {z} {p} k a → isHAEquivOver.linv (snd (fHAEquivOver a)) p k)
+        (λ {y} {z} {p} k a → isHAEquivOver.com (snd (fHAEquivOver a)) k)
 
-    elim≃ : {y : X} (p : FreeGroupoid R x y) → A p
-    elim≃ = elim (λ {y} p → A p)
-      f[]
-      (λ {y} {z} {p} k a → fst (fHAEquivOver a) p k)
-      (λ {y} {z} {p} k a → isHAEquivOver.inv (snd (fHAEquivOver a)) p k)
-      (λ {y} {z} {p} k a → isHAEquivOver.rinv (snd (fHAEquivOver a)) p k)
-      (λ {y} {z} {p} k a → isHAEquivOver.linv (snd (fHAEquivOver a)) p k)
-      (λ {y} {z} {p} k a → isHAEquivOver.com (snd (fHAEquivOver a)) k)
-
-  open ElimEquiv public using (elim≃)
+    open ElimEquiv public using (elim≃)
