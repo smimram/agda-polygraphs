@@ -1,5 +1,7 @@
 {-# OPTIONS --cubical #-}
 
+module 1Polygraph.PathElimination where
+
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function as Fun
 open import Cubical.Foundations.Equiv
@@ -18,8 +20,7 @@ open import Cubical.Relation.Nullary
 open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 open import Cubical.HITs.SetTruncation as ST hiding (rec ; elim)
 
-module 1Polygraph.PathElimination where
-
+open import Prelude
 open import 1Polygraph.Base
 open import Magmoid
 
