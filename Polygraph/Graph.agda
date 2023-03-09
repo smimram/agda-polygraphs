@@ -152,37 +152,6 @@ append [ x ]⁺ q = rt→t x q
 append (x ∷⁺ p) q = x ∷⁺ append p q
 
 ---
---- Path induction
----
-
-module PI (R : Graph X ℓ₁) where
-  open import Cubical.Categories.Category.Precategory
-
-  _↝_ = R
-
-  module _ (x₀ : X) where
-
-    C : Precategory _ _
-    Precategory.ob C = Σ (X → Type _) (λ K → K x₀ × ({x y : X} → x ↝ y → K x ≃ K y))
-    Precategory.Hom[_,_] C (K , r , e) (K' , r' , e') = Σ ((x : X) → K x → K' x) (λ f → (f x₀ r ≡ r') × ({x y : X} (a : x ↝ y) (k : K x) →  equivFun (e' a) (f x k) ≡ f y (equivFun (e a) k)))
-    Precategory.id C = (λ x k → k) , refl , λ s k → refl
-    Precategory._⋆_ C (f , δ , γ) (f' , δ' , γ') = (λ x k → f' x (f x k)) , cong (f' x₀) δ ∙ δ' , λ s k → {!!}
-    Precategory.⋆IdL C = {!!}
-    Precategory.⋆IdR C = {!!}
-    Precategory.⋆Assoc C = {!!}
-
-    open import Cubical.HITs.TypeQuotients as TQ
-
-    init : Precategory.ob C
-    init = (λ x → TQ.[ x₀ ] ≡ TQ.[ x ]) , refl , λ a → isoToEquiv (act a)
-      where
-      act : {x y : X} (a : x ↝ y) → Iso (TQ.[ x₀ ] ≡ TQ.[ x ]) (TQ.[ x₀ ] ≡ TQ.[ y ])
-      Iso.fun (act a) p = p ∙ eq/ _ _ a
-      Iso.inv (act a) p = p ∙ sym (eq/ _ _ a)
-      Iso.rightInv (act a) p = sym (assoc _ _ _) ∙ cong (λ q → p ∙ q) (lCancel (eq/ _ _ a)) ∙ sym (rUnit p)
-      Iso.leftInv (act a) p = sym (assoc _ _ _) ∙ cong (λ q → p ∙ q) (rCancel (eq/ _ _ a)) ∙ sym (rUnit p)
-
----
 --- The free higher groupoid
 ---
 
@@ -193,90 +162,93 @@ module FreeGroupoid where
 
   --  groupoid closure from the right
   data FreeGroupoid {X : Type ℓ₀} (_↝_ : Graph X ℓ₁) : Graph X (ℓ-max ℓ₀ ℓ₁) where
-    [] : {x : X} → FreeGroupoid _ x x
-    _∷+_ : {x y z : X} → FreeGroupoid _ x y → y ↝ z → FreeGroupoid _ x z
-    _∷-_ : {x y z : X} → FreeGroupoid _ x y → z ↝ y → FreeGroupoid _ x z
-    invl : {x y z : X} (p : FreeGroupoid _ x y) (a : z ↝ y)  → (p ∷- a) ∷+ a ≡ p
-    invr : {x y z : X} (p : FreeGroupoid _ x y) (a : y ↝ z) → p ∷+ a ∷- a ≡ p
-    coh  : {x y z : X} (p : FreeGroupoid _ x y) (a : y ↝ z) → cong (λ p → p ∷+ a) (invr p a) ≡ invl (p ∷+ a) a
+    [] : {x : X} → FreeGroupoid _↝_ x x
+    _∷+_ : {x y z : X} → FreeGroupoid _↝_ x y → y ↝ z → FreeGroupoid _ x z
+    _∷-_ : {x y z : X} → FreeGroupoid _↝_ x y → z ↝ y → FreeGroupoid _ x z
+    invl : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : z ↝ y)  → (p ∷- a) ∷+ a ≡ p
+    invr : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : y ↝ z) → p ∷+ a ∷- a ≡ p
+    coh  : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : y ↝ z) → cong (λ p → p ∷+ a) (invr p a) ≡ invl (p ∷+ a) a
 
-  -- plain elimination principle
-  elim :
-    {X : Type ℓ₀} {x : X} (R : Graph X ℓ₁) (A : {y : X} → FreeGroupoid R x y → Type ℓ₂) →
-    (f[] : A ([] {x = x}))
-    (f∷+ : {y z : X} {p : FreeGroupoid R x y} (_ : A p) (a : R y z) → A (p ∷+ a))
-    (f∷- : {y z : X} {p : FreeGroupoid R x y} (_ : A p) (a : R z y) → A (p ∷- a)) →
-    (fl : {y z : X} {p : FreeGroupoid R x y} (q : A p) (a : R z y) → PathP (λ i → A (invl p a i)) (f∷+ (f∷- q a) a) q)
-    (fr : {y z : X} {p : FreeGroupoid R x y} (q : A p) (a : R y z) → PathP (λ i → A (invr p a i)) (f∷- (f∷+ q a) a) q)
-    (fc : {y z : X} {p : FreeGroupoid R x y} (q : A p) (a : R y z) → PathP (λ i → PathP (λ j → A (coh p a i j)) (f∷+ (f∷- (f∷+ q a) a) a) (f∷+ q a)) (congP (λ _ q → f∷+ q a) (fr q a)) (fl (f∷+ q a) a)) →
-    {y : X} (p : FreeGroupoid R x y) → A p
-  elim {X = X} {x = x} R A f[] f+∷ f-∷ fl fr fc = e
-    where
-    e : {y : X} (p : FreeGroupoid R x y) → A p
-    e [] = f[]
-    e (p ∷+ a) = f+∷ (e p) a
-    e (p ∷- a) = f-∷ (e p) a
-    e (invl p a i) = fl (e p) a i
-    e (invr p a i) = fr (e p) a i
-    e (coh p a i j) = fc (e p) a i j
+  module _ {_↝_ : Graph X ℓ₁} where
+    _↝!_ = FreeGroupoid _↝_
 
-  rec :
-    {X : Type ℓ₀} {x : X} (R : Graph X ℓ₁) {A : Type ℓ₂} →
-    (f[] : A)
-    (f+∷ : {y z : X} → A → R y z → A)
-    (f-∷ : {y z : X} → A → R z y → A) →
-    (fl : {y z : X} (q : A) (a : R z y) → f+∷ (f-∷ q a) a ≡ q)
-    (fr : {y z : X} (q : A) (a : R y z) → f-∷ (f+∷ q a) a ≡ q)
-    (fc : {y z : X} (q : A) (a : R y z) → cong (λ q → f+∷ q a) (fr q a) ≡ fl (f+∷ q a) a) →
-    {y : X} (p : FreeGroupoid R x y) → A
-  rec {X = X} {x = x} R {A} f[] f+∷ f-∷ fl fr fc = elim R (λ _ → A) f[] f+∷ f-∷ fl fr fc
+    -- plain elimination principle
+    elim :
+      {x : X} (A : {y : X} → x ↝! y → Type ℓ₂) →
+      (f[] : A ([] {x = x}))
+      (f∷+ : {y z : X} {p : x ↝! y} (_ : A p) (a : y ↝ z) → A (p ∷+ a))
+      (f∷- : {y z : X} {p : x ↝! y} (_ : A p) (a : z ↝ y) → A (p ∷- a)) →
+      (fl : {y z : X} {p : x ↝! y} (q : A p) (a : z ↝ y) → PathP (λ i → A (invl p a i)) (f∷+ (f∷- q a) a) q)
+      (fr : {y z : X} {p : x ↝! y} (q : A p) (a : y ↝ z) → PathP (λ i → A (invr p a i)) (f∷- (f∷+ q a) a) q)
+      (fc : {y z : X} {p : x ↝! y} (q : A p) (a : y ↝ z) → PathP (λ i → PathP (λ j → A (coh p a i j)) (f∷+ (f∷- (f∷+ q a) a) a) (f∷+ q a)) (congP (λ _ q → f∷+ q a) (fr q a)) (fl (f∷+ q a) a)) →
+      {y : X} (p : x ↝! y) → A p
+    elim {x = x} A f[] f+∷ f-∷ fl fr fc = e
+      where
+      e : {y : X} (p : x ↝! y) → A p
+      e [] = f[]
+      e (p ∷+ a) = f+∷ (e p) a
+      e (p ∷- a) = f-∷ (e p) a
+      e (invl p a i) = fl (e p) a i
+      e (invr p a i) = fr (e p) a i
+      e (coh p a i j) = fc (e p) a i j
 
-  -- alternative recurrence principle to an equivalence
-  recHAEquiv : 
-    {X : Type ℓ₀} {x : X} (R : Graph X ℓ₁) {A : Type ℓ₂} →
-    (f[] : A)
-    (f≃ : HAEquiv A A)
-    {y : X} (p : FreeGroupoid R x y) → A
-  recHAEquiv R f[] f≃ = rec R f[] (λ a _ → fst f≃ a) (λ a _ → snd f≃ .isHAEquiv.g a ) (λ p _ → snd f≃ .isHAEquiv.rinv p) (λ p _ → snd f≃ .isHAEquiv.linv p) (λ p _ → snd f≃ .isHAEquiv.com p)
+    rec :
+      {x : X} {A : Type ℓ₂} →
+      (f[] : A)
+      (f∷+ : {y z : X} → A → y ↝ z → A)
+      (f∷- : {y z : X} → A → z ↝ y → A) →
+      (fl : {y z : X} (q : A) (a : z ↝ y) → f∷+ (f∷- q a) a ≡ q)
+      (fr : {y z : X} (q : A) (a : y ↝ z) → f∷- (f∷+ q a) a ≡ q)
+      (fc : {y z : X} (q : A) (a : y ↝ z) → cong (λ q → f∷+ q a) (fr q a) ≡ fl (f∷+ q a) a) →
+      {y : X} (p : x ↝! y) → A
+    rec {x = x} {A} f[] f∷+ f∷- fl fr fc = elim (λ _ → A) f[] f∷+ f∷- fl fr fc
 
-  rec≃ :
-    {X : Type ℓ₀} {x : X} (R : Graph X ℓ₁) {A : Type ℓ₂} →
-    (f[] : A)
-    (f≃ : A ≃ A)
-    {y : X} (p : FreeGroupoid R x y) → A
-  rec≃ R f[] f≃ = recHAEquiv R f[] (equiv→HAEquiv f≃)
+    -- alternative recurrence principle to an equivalence
+    recHAEquiv :
+      {x : X} {A : Type ℓ₂} →
+      (f[] : A)
+      (f≃ : HAEquiv A A)
+      {y : X} (p : x ↝! y) → A
+    recHAEquiv f[] f≃ = rec f[] (λ a _ → fst f≃ a) (λ a _ → snd f≃ .isHAEquiv.g a ) (λ p _ → snd f≃ .isHAEquiv.rinv p) (λ p _ → snd f≃ .isHAEquiv.linv p) (λ p _ → snd f≃ .isHAEquiv.com p)
 
-  compIsoR : {X : Type ℓ₀} (R : Graph X ℓ₁) (x : X) {y z : X} (a : R y z) → Iso (FreeGroupoid R x y) (FreeGroupoid R x z)
-  compIsoR R x {y} {z} a = e
-    where
-    e : Iso (FreeGroupoid R x y) (FreeGroupoid R x z)
-    Iso.fun e p = p ∷+ a
-    Iso.inv e p = p ∷- a
-    Iso.rightInv e p = invl p a
-    Iso.leftInv e p = invr p a
+    rec≃ :
+      {x : X} {A : Type ℓ₂} →
+      (f[] : A)
+      (f≃ : A ≃ A)
+      {y : X} (p : x ↝! y) → A
+    rec≃ f[] f≃ = recHAEquiv f[] (equiv→HAEquiv f≃)
 
-  compEquivR : {X : Type ℓ₀} (R : Graph X ℓ₁) (x : X) {y z : X} (a : R y z) → FreeGroupoid R x y ≃ FreeGroupoid R x z
-  compEquivR R x {y} {z} a = isoToEquiv (compIsoR R x a)
+    compIsoR : (x : X) {y z : X} (a : y ↝ z) → Iso (x ↝! y) (x ↝! z)
+    compIsoR x {y} {z} a = e
+      where
+      e : Iso (x ↝! y) (x ↝! z)
+      Iso.fun e p = p ∷+ a
+      Iso.inv e p = p ∷- a
+      Iso.rightInv e p = invl p a
+      Iso.leftInv e p = invr p a
 
-  compHAEquivR : {X : Type ℓ₀} (R : Graph X ℓ₁) (x : X) {y z : X} (a : R y z) → HAEquiv (FreeGroupoid R x y) (FreeGroupoid R x z)
-  compHAEquivR R x {y} {z} a = f , e
-    where
-    f : FreeGroupoid R x y → FreeGroupoid R x z
-    f p = p ∷+ a
-    e : isHAEquiv f
-    isHAEquiv.g e p = p ∷- a
-    isHAEquiv.linv e p = invr p a
-    isHAEquiv.rinv e p = invl p a
-    isHAEquiv.com e p = coh p a
+    compEquivR : (x : X) {y z : X} (a : y ↝ z) → x ↝! y ≃ x ↝! z
+    compEquivR x {y} {z} a = isoToEquiv (compIsoR x a)
 
-  compIsoR⁻ : {X : Type ℓ₀} (R : Graph X ℓ₁) (x : X) {y z : X} (a : R z y) → Iso (FreeGroupoid R x y) (FreeGroupoid R x z)
-  compIsoR⁻ R x {y} {z} a = e
-    where
-    e : Iso (FreeGroupoid R x y) (FreeGroupoid R x z)
-    Iso.fun e p = p ∷- a
-    Iso.inv e p = p ∷+ a
-    Iso.rightInv e p = invr p a
-    Iso.leftInv e p = invl p a
+    compHAEquivR : (x : X) {y z : X} (a : y ↝ z) → HAEquiv (x ↝! y) (x ↝! z)
+    compHAEquivR x {y} {z} a = f , e
+      where
+      f : x ↝! y → x ↝! z
+      f p = p ∷+ a
+      e : isHAEquiv f
+      isHAEquiv.g e p = p ∷- a
+      isHAEquiv.linv e p = invr p a
+      isHAEquiv.rinv e p = invl p a
+      isHAEquiv.com e p = coh p a
+
+    compIsoR⁻ : (x : X) {y z : X} (a : z ↝ y) → Iso (x ↝! y) (x ↝! z)
+    compIsoR⁻ x {y} {z} a = e
+      where
+      e : Iso (x ↝! y) (x ↝! z)
+      Iso.fun e p = p ∷- a
+      Iso.inv e p = p ∷+ a
+      Iso.rightInv e p = invr p a
+      Iso.leftInv e p = invl p a
 
   -- packed elimination principle to an equivalence
   module ElimEquiv
@@ -348,38 +320,38 @@ module FreeGroupoid where
     -- fgf : {y z : X} (p : FreeGroupoid R x y) (a : R y z) (k : A p) → {!gf p a k!} ≡ fg (p ∷+ a) a (f p a k)
     -- fgf p a k = {!!}
 
-    fIsoOver : {y z : X} (a : R y z) → IsoOver (compIsoR R x a) A A
+    fIsoOver : {y z : X} (a : R y z) → IsoOver (compIsoR x a) A A
     IsoOver.fun (fIsoOver a) p k = f p a k
     IsoOver.inv (fIsoOver a) p k = g p a k
     IsoOver.rightInv (fIsoOver {y} {z} a) p k = toPathP (fg p a k)
     IsoOver.leftInv (fIsoOver a) p k = toPathP (gf p a k)
 
-    fHAEquivOver0 : {y z : X} (a : R y z) → HAEquivOver A A (iso→HAEquiv (compIsoR R x a))
+    fHAEquivOver0 : {y z : X} (a : R y z) → HAEquivOver A A (iso→HAEquiv (compIsoR x a))
     fHAEquivOver0 a = IsoOver.fun (fIsoOver a) , IsoOver→HAEquivOver (fIsoOver a)
 
     -- TODO: is there a more direct way to perform this??? (from the above data...)
-    fHAEquivOver : {y z : X} (a : R y z) → HAEquivOver A A (compHAEquivR R x a)
+    fHAEquivOver : {y z : X} (a : R y z) → HAEquivOver A A (compHAEquivR x a)
     fHAEquivOver a = fun , isHAE'
       where
-      fun : mapOver (compIsoR R x a .Iso.fun) A A
+      fun : mapOver (compIsoR x a .Iso.fun) A A
       fun = IsoOver.fun (fIsoOver a)
-      isHAE : isHAEquivOver (iso→HAEquiv (compIsoR R x a)) A A fun
+      isHAE : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A fun
       isHAE = IsoOver→HAEquivOver (fIsoOver a)
-      lem : iso→HAEquiv (compIsoR R x a) ≡ compHAEquivR R x a
+      lem : iso→HAEquiv (compIsoR x a) ≡ compHAEquivR x a
       lem = Σ≡Prop (λ f → isPropIsHAEquiv {f = f}) refl
       lem' : PathP
         (λ i → (fun : mapOver (lem i .fst) A A) → Type (ℓ-max (ℓ-max ℓ₀ ℓ₁) ℓ₂))
-        (isHAEquivOver (iso→HAEquiv (compIsoR R x a)) A A)
-        (isHAEquivOver (compHAEquivR R x a) A A)
+        (isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A)
+        (isHAEquivOver (compHAEquivR x a) A A)
       lem' = funExt⁻ (funExt⁻ (cong isHAEquivOver lem) A) A
-      lem'' : isHAEquivOver (iso→HAEquiv (compIsoR R x a)) A A ≡ isHAEquivOver (compHAEquivR R x a) A A
+      lem'' : isHAEquivOver (iso→HAEquiv (compIsoR x a)) A A ≡ isHAEquivOver (compHAEquivR x a) A A
       lem'' = sym (transportRefl _) ∙ fromPathP lem'
       abstract
-        isHAE' : isHAEquivOver (compHAEquivR R x a) A A fun
+        isHAE' : isHAEquivOver (compHAEquivR x a) A A fun
         isHAE' = transport (funExt⁻ lem'' fun) isHAE
 
     elim≃ : {y : X} (p : FreeGroupoid R x y) → A p
-    elim≃ = elim R (λ {y} p → A p)
+    elim≃ = elim (λ {y} p → A p)
       f[]
       (λ {y} {z} {p} k a → fst (fHAEquivOver a) p k)
       (λ {y} {z} {p} k a → isHAEquivOver.inv (snd (fHAEquivOver a)) p k)
