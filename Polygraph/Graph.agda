@@ -51,105 +51,110 @@ data SymClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀
 
 data TransClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
   [_]⁺ : {a b : A} → R a b → TransClosure R a b
-  _∷⁺_ : {a b c : A} → R a b → TransClosure R b c → TransClosure R a c
+  _∷⁺_ : {a b c : A} → TransClosure R b c → R a b → TransClosure R a c
 
-hd : {a c : A} (p : TransClosure R a c) → Σ A (λ b → R a b)
-hd [ x ]⁺ = _ , x
-hd (x ∷⁺ p) = _ , x
+-- hd : {a c : A} (p : TransClosure R a c) → Σ A (λ b → R a b)
+-- hd [ x ]⁺ = _ , x
+-- hd (x ∷⁺ p) = _ , x
 
-snoc⁺ : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
-snoc⁺ [ x ]⁺ y = x ∷⁺ [ y ]⁺
-snoc⁺ (x ∷⁺ p) y = x ∷⁺ snoc⁺ p y
+-- snoc⁺ : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
+-- snoc⁺ [ x ]⁺ y = x ∷⁺ [ y ]⁺
+-- snoc⁺ (x ∷⁺ p) y = x ∷⁺ snoc⁺ p y
 
-transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
-transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (iso F G FG GF))
-  where
-  F  : {x y : A} → TransClosure (op R) x y → op (TransClosure R) x y
-  F [ x ]⁺ = [ x ]⁺
-  F (x ∷⁺ p) = snoc⁺ (F p) x
-  G : {x y : A} → op (TransClosure R) x y → TransClosure (op R) x y
-  G [ x ]⁺ = [ x ]⁺
-  G (x ∷⁺ p) = snoc⁺ (G p) x
-  F-snoc : {x y z : A} (p : TransClosure (op R) x y) (q : R z y) → F (snoc⁺ p q) ≡ q ∷⁺ (F p)
-  F-snoc [ x ]⁺ q = refl
-  F-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (F-snoc p q)
-  G-snoc : {x y z : A} (p : op (TransClosure R) y z) (q : R y x) → G (snoc⁺ p q) ≡ q ∷⁺ G p
-  G-snoc [ x ]⁺ q = refl
-  G-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (G-snoc p q)
-  FG : {x y : A} (p : op (TransClosure R) x y) → F (G p) ≡ p
-  FG [ x ]⁺ = refl
-  FG (x ∷⁺ p) = F-snoc (G p) x ∙ cong (λ p → x ∷⁺ p) (FG p)
-  GF : {x y : A} (p : TransClosure (op R) x y) → G (F p) ≡ p
-  GF [ x ]⁺ = refl
-  GF (x ∷⁺ p) = G-snoc (F p) x ∙ cong (λ p → x ∷⁺ p) (GF p)
+-- transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
+-- transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (iso F G FG GF))
+  -- where
+  -- F  : {x y : A} → TransClosure (op R) x y → op (TransClosure R) x y
+  -- F [ x ]⁺ = [ x ]⁺
+  -- F (x ∷⁺ p) = snoc⁺ (F p) x
+  -- G : {x y : A} → op (TransClosure R) x y → TransClosure (op R) x y
+  -- G [ x ]⁺ = [ x ]⁺
+  -- G (x ∷⁺ p) = snoc⁺ (G p) x
+  -- F-snoc : {x y z : A} (p : TransClosure (op R) x y) (q : R z y) → F (snoc⁺ p q) ≡ q ∷⁺ (F p)
+  -- F-snoc [ x ]⁺ q = refl
+  -- F-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (F-snoc p q)
+  -- G-snoc : {x y z : A} (p : op (TransClosure R) y z) (q : R y x) → G (snoc⁺ p q) ≡ q ∷⁺ G p
+  -- G-snoc [ x ]⁺ q = refl
+  -- G-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (G-snoc p q)
+  -- FG : {x y : A} (p : op (TransClosure R) x y) → F (G p) ≡ p
+  -- FG [ x ]⁺ = refl
+  -- FG (x ∷⁺ p) = F-snoc (G p) x ∙ cong (λ p → x ∷⁺ p) (FG p)
+  -- GF : {x y : A} (p : TransClosure (op R) x y) → G (F p) ≡ p
+  -- GF [ x ]⁺ = refl
+  -- GF (x ∷⁺ p) = G-snoc (F p) x ∙ cong (λ p → x ∷⁺ p) (GF p)
 
 module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   _<⁺_ = TransClosure _<_
 
   WFtrans : isWellFounded _<_ → isWellFounded _<⁺_
-  WFtrans wf = induction wf (λ a ih → acc (λ c a<⁺c → lem ih a<⁺c))
+  WFtrans wf = induction wf λ x ih → acc λ y y<⁺x → lem ih y<⁺x
     where
-    lem : {a c : A} → ((b : A) → b < a → isAcc _<⁺_ b) → c <⁺ a → isAcc _<⁺_ c
-    lem ih [ a<c ]⁺ = ih _ a<c
-    lem ih (c<b ∷⁺ b<⁺a) with lem ih b<⁺a
-    ... | acc <b-is-acc = <b-is-acc _ [ c<b ]⁺
+    lem : {x z : A} → ((y : A) → y < x → isAcc _<⁺_ y) → z <⁺ x → isAcc _<⁺_ z
+    lem ih [ z<x ]⁺ = ih _ z<x
+    lem {x} {z} ih (y<⁺x ∷⁺ z<y) with lem ih y<⁺x
+    ... | acc <z-isAcc = <z-isAcc _ [ z<y ]⁺
 
 infixr 5 _∷_
 
--- The reflexive-transitive closure
-data TransReflClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
-  [] : {a : A} → TransReflClosure R a a
-  _∷_ : {a b c : A} → R a b → TransReflClosure R b c → TransReflClosure R a c
+module FreeCategory where
+  -- The reflexive-transitive closure
+  data FreeCategory {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
+    [] : {x : A} → FreeCategory R x x
+    _∷_ : {x y z : A} → FreeCategory R x y → R y z → FreeCategory R x z
 
-∷-elim :
-  (P : {a b : A} → TransReflClosure R a b → Set ℓ₂) →
-  ({a : A} → P ([] {a = a})) →
-  ({a b c : A} (x : R a b) (p : TransReflClosure R b c) → P (x ∷ p)) →
-  {a b : A} (p : TransReflClosure R a b) → P p
-∷-elim P P[] P∷ [] = P[]
-∷-elim P P[] P∷ (x ∷ p) = P∷ x p
+  module _ {_↝_ : Graph A ℓ₁} where
+  
+    _↝*_ = FreeCategory _↝_
 
-∷-rec :
-  {P : Set ℓ₂} →
-  ((a : A) → P) →
-  ({a b c : A} → R a b → TransReflClosure R b c → P) →
-  {a b : A} → TransReflClosure R a b → P
-∷-rec {P = P} P[] P∷ = ∷-elim (λ {_} {_} _ → P) (λ {a} → P[] a) P∷
+    elim :
+      (P : {x y : A} → x ↝* y → Type ℓ₂) →
+      ({x : A} → P ([] {x = x})) →
+      ({x y z : A} (p : x ↝* y) (a : y ↝ z) → P (p ∷ a)) →
+      {x y : A} (p : x ↝* y) → P p
+    elim P P[] P∷ [] = P[]
+    elim P P[] P∷ (x ∷ p) = P∷ x p
 
-∷-destruct : {a c : A} (q : TransReflClosure R a c) → (Σ (a ≡ c) (λ p → PathP (λ i → TransReflClosure R (p i) c) q [])) ⊎ Σ A (λ b → Σ (R a b) λ x → Σ (TransReflClosure R b c) λ p → q ≡ x ∷ p)
-∷-destruct [] = inl (refl , refl)
-∷-destruct (x ∷ q) = inr (_ , x , q , refl)
+    rec :
+      {P : Type ℓ₂} →
+      ((x : A) → P) →
+      ({x y z : A} → x ↝* y → y ↝ z → P) →
+      {x y : A} → x ↝* y → P
+    rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {a} → P[] a) P∷
 
-[_] : {a b : A} → R a b → TransReflClosure R a b
-[ p ] = p ∷ []
+-- ∷-destruct : {a c : A} (q : TransReflClosure R a c) → (Σ (a ≡ c) (λ p → PathP (λ i → TransReflClosure R (p i) c) q [])) ⊎ Σ A (λ b → Σ (R a b) λ x → Σ (TransReflClosure R b c) λ p → q ≡ x ∷ p)
+-- ∷-destruct [] = inl (refl , refl)
+-- ∷-destruct (x ∷ q) = inr (_ , x , q , refl)
 
-infixr 5 _·_
-_·_ : {a b c : A} → TransReflClosure R a b → TransReflClosure R b c → TransReflClosure R a c
-[] · q = q
-(x ∷ p) · q = x ∷ (p · q)
+-- [_] : {a b : A} → R a b → TransReflClosure R a b
+-- [ p ] = p ∷ []
 
-[≡_] : {ℓ₀ ℓ₁ : Level} {A : Type ℓ₀} {R : Graph A ℓ₁} {a a' : A} → a ≡ a' → TransReflClosure R a a'
-[≡_] {R = R} {a = a} p = J (λ a' _ → TransReflClosure R a a') [] p
+-- infixr 5 _·_
+-- _·_ : {a b c : A} → TransReflClosure R a b → TransReflClosure R b c → TransReflClosure R a c
+-- [] · q = q
+-- (x ∷ p) · q = x ∷ (p · q)
 
-·-assoc : {a b c d : A} (p : TransReflClosure R a b) (q : TransReflClosure R b c) (r : TransReflClosure R c d) → (p · q) · r ≡ p · (q · r)
-·-assoc [] q r = refl
-·-assoc (x ∷ p) q r = cong (λ p → x ∷ p) (·-assoc p q r)
+-- [≡_] : {ℓ₀ ℓ₁ : Level} {A : Type ℓ₀} {R : Graph A ℓ₁} {a a' : A} → a ≡ a' → TransReflClosure R a a'
+-- [≡_] {R = R} {a = a} p = J (λ a' _ → TransReflClosure R a a') [] p
 
-·-unitr : {a b : A} (p : TransReflClosure R a b) → p · [] ≡ p
-·-unitr [] = refl
-·-unitr (x ∷ p) = cong (λ p → x ∷ p) (·-unitr p)
+-- ·-assoc : {a b c d : A} (p : TransReflClosure R a b) (q : TransReflClosure R b c) (r : TransReflClosure R c d) → (p · q) · r ≡ p · (q · r)
+-- ·-assoc [] q r = refl
+-- ·-assoc (x ∷ p) q r = cong (λ p → x ∷ p) (·-assoc p q r)
 
-t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
-t→rt [ x ]⁺ = x ∷ []
-t→rt (x ∷⁺ p) = {!x ∷ (t→rt p)!}
+-- ·-unitr : {a b : A} (p : TransReflClosure R a b) → p · [] ≡ p
+-- ·-unitr [] = refl
+-- ·-unitr (x ∷ p) = cong (λ p → x ∷ p) (·-unitr p)
 
-rt→t : {a b c : A} → R a b → TransReflClosure R b c → TransClosure R a c
-rt→t a<b [] = [ a<b ]⁺
-rt→t a<b (b<b' ∷ b'<*c) = a<b ∷⁺ rt→t b<b' b'<*c
+-- t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
+-- t→rt [ x ]⁺ = x ∷ []
+-- t→rt (x ∷⁺ p) = {!x ∷ (t→rt p)!}
 
-append : {a b c : A} → TransClosure R a b → TransReflClosure R b c → TransClosure R a c
-append [ x ]⁺ q = rt→t x q
-append (x ∷⁺ p) q = x ∷⁺ append p q
+-- rt→t : {a b c : A} → R a b → TransReflClosure R b c → TransClosure R a c
+-- rt→t a<b [] = [ a<b ]⁺
+-- rt→t a<b (b<b' ∷ b'<*c) = a<b ∷⁺ rt→t b<b' b'<*c
+
+-- append : {a b c : A} → TransClosure R a b → TransReflClosure R b c → TransClosure R a c
+-- append [ x ]⁺ q = rt→t x q
+-- append (x ∷⁺ p) q = x ∷⁺ append p q
 
 ---
 --- The free higher groupoid
