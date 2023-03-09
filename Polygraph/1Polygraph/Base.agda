@@ -36,12 +36,8 @@ module Operations (P : 1Polygraph {ℓ₀} {ℓ₁}) where
   _↝+_ = TransClosure _↝_
   -- _↭_  = TransReflClosure (SymClosure _↝_)
   _↭!_ = FreeGroupoid.FreeGroupoid _↝_
-
-  _↜_ : Σ₀ → Σ₀ → Type _
-  x ↜ y  = y ↝ x
-
-  _↜+_ : Σ₀ → Σ₀ → Type _
-  _↜+_ = λ x y → y ↝+ x
+  _↜_ = Graph.op _↝_
+  _↜+_ = Graph.op _↝+_
 
 module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
   open Operations P
@@ -52,146 +48,111 @@ module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
 
   -- the transitive closure of reduction is well-founded
   WF+ : isWF → isWellFounded _↜+_
-  WF+ wf = {!!} -- subst isWellFounded (transOp _) (WFtrans _↜_ wf)
+  WF+ wf = subst isWellFounded (transOp _) (WFtrans _↜_ wf)
 
   -- normal forms
 
   isNF : (x : Σ₀) → Type _
   isNF x = {y : Σ₀} → x ↝+ y → ⊥
 
-  -- -- testing alternative definitions of normal forms
-  -- module test-nf where
-    -- isNF' : (x : Σ₀) → Type _
-    -- isNF' x = {y : Σ₀} → x ↝* y → y ↝* x
+  -- testing alternative definitions of normal forms
+  module test-nf where
+    isNF' : (x : Σ₀) → Type _
+    isNF' x = {y : Σ₀} → x ↝* y → y ↝* x
 
-    -- -- WFloops : ({x : Σ₀} → x ↝+ x) → Σ₀ → ¬ isWF
-    -- -- WFloops p x wf = induction (WF+ wf) (λ x' ih → ih x' p) x
+    -- WFloops : ({x : Σ₀} → x ↝+ x) → Σ₀ → ¬ isWF
+    -- WFloops p x wf = induction (WF+ wf) (λ x' ih → ih x' p) x
 
-    -- WFloop : isWF → {x : Σ₀} → x ↝+ x → ⊥
-    -- WFloop wf {x} p = lem x p
-      -- where
-      -- lem : (x : Σ₀) → x ↝+ x → ⊥
-      -- lem x = induction (WF+ wf) {P = λ x → x ↝+ x → ⊥} (λ x ih q → ih x q q) x
+    WFloop : isWF → {x : Σ₀} → x ↝+ x → ⊥
+    WFloop wf {x} p = lem x p
+      where
+      lem : (x : Σ₀) → x ↝+ x → ⊥
+      lem x = induction (WF+ wf) {P = λ x → x ↝+ x → ⊥} (λ x ih q → ih x q q) x
 
     -- isNF'→isNF : isWF → {x : Σ₀} → isNF' x → isNF x
-    -- isNF'→isNF wf n p = WFloop wf (append p (n (t→rt p)))
+    -- isNF'→isNF wf n p = ? -- WFloop wf (append p (n (t→rt p)))
 
     -- -- This definition is closer to the traditional one but less nice than the
     -- -- above one.
     -- isNF'' : (x : Σ₀) → Type _
     -- isNF'' x = {y : Σ₀} (f : x ↝* y) → Σ (x ≡ y) (λ p → subst (λ x → x ↝* y) p f ≡ [])
 
-    -- -- isNF'→isNF'' : isWF → (x : Σ₀) → isNF' x → isNF'' x
-    -- -- isNF'→isNF'' wf x n [] = refl , {!!}
-    -- -- isNF'→isNF'' wf x n (a ∷ p) = ⊥.rec (WFloop wf {!rt→t a p!})
+    -- isNF'→isNF'' : isWF → (x : Σ₀) → isNF' x → isNF'' x
+    -- isNF'→isNF'' wf x n [] = refl , {!!}
+    -- isNF'→isNF'' wf x n (a ∷ p) = ⊥.rec (WFloop wf {!rt→t a p!})
 
-  -- -- normalizing
-  -- isNZ : (x : Σ₀) → Type _
-  -- isNZ x = Σ Σ₀ λ y → x ↝* y × isNF y
+  -- normalizing
+  isNZ : (x : Σ₀) → Type _
+  isNZ x = Σ Σ₀ λ y → x ↝* y × isNF y
 
-  -- -- normalization property
-  -- hasNZ : Type _
-  -- hasNZ = (x : Σ₀) → isNZ x
+  -- normalization property
+  hasNZ : Type _
+  hasNZ = (x : Σ₀) → isNZ x
 
-  -- -- reducible
-  -- isR : (x : Σ₀) → Type _
-  -- isR x = (Σ Σ₀ λ y → x ↝ y)
+  -- reducible
+  isR : (x : Σ₀) → Type _
+  isR x = (Σ Σ₀ λ y → x ↝ y)
 
-  -- -- decidable reducibility
-  -- isDR : (x : Σ₀) → Type _
-  -- isDR x = Dec (isR x)
+  -- decidable reducibility
+  isDR : (x : Σ₀) → Type _
+  isDR x = Dec (isR x)
 
-  -- -- every element has decidable reducibility
-  -- hasDR : Type _
-  -- hasDR = (x : Σ₀) → isDR x
+  -- every element has decidable reducibility
+  hasDR : Type _
+  hasDR = (x : Σ₀) → isDR x
 
-  -- -- -- uniqueness of normal forms
-  -- -- isNF : isWF → {x : Σ₀} → isNF' x → (y : Σ₀) → x ↝* y → x ≡ y
-  -- -- isNF wf nx ny [] = refl
-  -- -- isNF wf nx ny (a ∷ p) = ⊥.rec (WFloop wf {!!})
+  -- uniqueness of normal forms
+  -- isNF : isWF → {x : Σ₀} → isNF' x → (y : Σ₀) → x ↝* y → x ≡ y
+  -- isNF wf nx ny [] = refl
+  -- isNF wf nx ny (a ∷ p) = ⊥.rec (WFloop wf {!!})
 
-  -- -- The presented type
-  -- data ⟦_⟧ : Type (ℓ-max ℓ₀ ℓ₁) where
-    -- ∣_∣  : Σ₀ → ⟦_⟧
-    -- ∣_∣₁ : {x y : Σ₀} → x ↝ y → ∣ x ∣ ≡ ∣ y ∣
+  -- The presented type
+  data ⟦_⟧ : Type (ℓ-max ℓ₀ ℓ₁) where
+    ∣_∣  : Σ₀ → ⟦_⟧
+    ∣_∣₁ : {x y : Σ₀} → x ↝ y → ∣ x ∣ ≡ ∣ y ∣
 
-  -- rec : {A : Type ℓ₂} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) → ⟦_⟧ → A
-  -- rec {f₀ = f₀} f ∣ x ∣ = f₀ x
-  -- rec f (∣ a ∣₁ i) = f a i
+  rec : {A : Type ℓ₂} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) → ⟦_⟧ → A
+  rec {f₀ = f₀} f ∣ x ∣ = f₀ x
+  rec f (∣ a ∣₁ i) = f a i
 
-  -- rec-comp₁ : {A : Type ℓ₂} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} (a : x ↝ y) → cong (rec f) ∣ a ∣₁ ≡ f a
-  -- rec-comp₁ f a = refl
+  rec-comp₁ : {A : Type ℓ₂} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} (a : x ↝ y) → cong (rec f) ∣ a ∣₁ ≡ f a
+  rec-comp₁ f a = refl
 
--- module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
-  -- open 1Operations P
+module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
+  open Operations P
 
-  -- -- everybody has a normal form
-  -- normalize : isWF P → hasDR P → hasNZ P
-  -- normalize wf dr x = induction (WF+ P wf) {P = isNZ P} ind x
-    -- where
-    -- ind : (x : Σ₀) (ih : (y : Σ₀) → x ↝+ y → isNZ P y) → isNZ P x
+  open FreeCategory hiding (elim)
+
+  -- everybody has a normal form
+  normalize : isWF P → hasDR P → hasNZ P
+  normalize wf dr x = induction (WF+ P wf) {P = isNZ P} ind x
+    where
+    ind : (x : Σ₀) (ih : (y : Σ₀) → x ↝+ y → isNZ P y) → isNZ P x
+    ind = {!!}
     -- ind y ih with dr y
     -- ... | no ¬red = y , ([] , (λ {z} y↝*z → ¬red (hd y↝*z)))
     -- ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺
     -- ... | z , y'↝z , nz = z , (y↝y' ∷ y'↝z) , nz
 
-  -- elim : (A : ⟦ P ⟧ → Type ℓ₃) (f₀ : (x : Σ₀) → A ∣ x ∣) (f : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A (∣ a ∣₁ i)) (f₀ x) (f₀ y)) (x : ⟦ P ⟧) → A x
-  -- elim A f₀ f ∣ x ∣ = f₀ x
-  -- elim A f₀ f (∣ a ∣₁ i) = f a i
+  elim : (A : ⟦ P ⟧ → Type ℓ₃) (f₀ : (x : Σ₀) → A ∣ x ∣) (f : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A (∣ a ∣₁ i)) (f₀ x) (f₀ y)) (x : ⟦ P ⟧) → A x
+  elim A f₀ f ∣ x ∣ = f₀ x
+  elim A f₀ f (∣ a ∣₁ i) = f a i
 
-  -- eta : (A : ⟦ P ⟧ → Type ℓ₃) (f : (x : ⟦ P ⟧) → A x) → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) ≡ f
-  -- eta A f = funExt (elim (λ n → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) n ≡ f n) (λ x → refl) (λ {x} {y} a i → refl))
+  eta : (A : ⟦ P ⟧ → Type ℓ₃) (f : (x : ⟦ P ⟧) → A x) → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) ≡ f
+  eta A f = funExt (elim (λ n → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) n ≡ f n) (λ x → refl) (λ {x} {y} a i → refl))
 
--- module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
-  -- open 1Operations P
+  ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
+  ∣ [] ∣* = refl
+  ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ p ∣₁
 
-  -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
-  -- ∣ [] ∣* = refl
-  -- ∣ a ∷ p ∣* = ∣ a ∣₁ ∙ ∣ p ∣*
-
-  -- _* : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} → x ↝* y → f₀ x ≡ f₀ y
-  -- (f *) [] = refl
-  -- (f *) (a ∷ p) = f a ∙ (f *) p
+  _* : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} → x ↝* y → f₀ x ≡ f₀ y
+  (f *) [] = refl
+  (f *) (p ∷ a) = (f *) p ∙ f a
 
   -- -- dependent version
   -- *P : (A : ⟦ P ⟧ → Type ℓ₃) {f₀ : (x : Σ₀) → A ∣ x ∣} (f : {x y : Σ₀} (α : x ↝ y) → PathP (λ i → A (∣ α ∣₁ i)) (f₀ x) (f₀ y)) {x y : Σ₀} (p : x ↝* y) → PathP (λ i → A (∣ p ∣* i)) (f₀ x) (f₀ y)
   -- *P A f [] = refl
   -- *P A f {x} {y} (a ∷ p) = compPathP' {B = A} (f a) (*P A f p)
-
-  -- -- ∣_∣' : {x y : Σ₀} → (x ↭ y) → ∣ x ∣ ≡ ∣ y ∣
-  -- -- ∣ [] ∣' = refl
-  -- -- ∣ σ+ a ∷ l ∣' = ∣ a ∣₁ ∙ ∣ l ∣'
-  -- -- ∣ σ- a ∷ l ∣' = sym ∣ a ∣₁ ∙ ∣ l ∣'
-
-  -- -- ∣∣'· : {x y z : Σ₀} (p : x ↭ y) (q : y ↭ z) → ∣ p · q ∣' ≡ ∣ p ∣' ∙ ∣ q ∣'
-  -- -- ∣∣'· [] q = lUnit _
-  -- -- ∣∣'· (σ+ a ∷ p) q = cong (_∙_ ∣ a ∣₁) (∣∣'· p q) ∙ assoc _ _ _
-  -- -- ∣∣'· (σ- a ∷ p) q = cong (_∙_ (sym ∣ a ∣₁)) (∣∣'· p q) ∙ assoc _ _ _
-
-  -- -- -- characterizing path spaces with target a normal form
-  -- -- -- TODO: something like this should be true after confluence
-  -- -- module Npaths where
-    -- -- code : (x : ⟦_⟧) (y : Σ₀) → isNF y → Type _
-    -- -- code x y n = c x
-      -- -- where
-      -- -- same : {x x' : Σ₀} → x ↝ x' → x ↝* y ≡ x' ↝* y
-      -- -- same {x} {x'} a = ua (isoToEquiv (iso F G {!!} {!!}))
-        -- -- where
-        -- -- F : x ↝* y → x' ↝* y
-        -- -- F p = {!!}
-        -- -- G : x' ↝* y → x ↝* y
-        -- -- G p = a ∷ p
-      -- -- c : (x : ⟦_⟧) → Type _
-      -- -- c x = rec {f₀ = λ x → x ↝* y} same x
-
-    -- -- -- TODO: show this as a consequence...
-    -- -- isPropIsNF : (x : Σ₀) → isProp (isNF x)
-    -- -- isPropIsNF x m n = {!!}
-
-  -- -- module paths where
-    -- -- -- the type of paths
-    -- -- code : (x : Σ₀) (y : ⟦_⟧) → Type _
-    -- -- code x y = rec {f₀ = λ y → GpdClosure _↝_ x y} (λ {y} {z} a → {!!}) y
 
 -- module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
   -- open 1Operations P

@@ -49,6 +49,8 @@ data SymClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀
 --- The transitive closure
 ---
 
+infixl 5 _∷⁺_
+
 data TransClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
   [_]⁺ : {a b : A} → R a b → TransClosure R a b
   _∷⁺_ : {a b c : A} → TransClosure R b c → R a b → TransClosure R a c
@@ -83,6 +85,15 @@ data TransClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ�
   -- GF [ x ]⁺ = refl
   -- GF (x ∷⁺ p) = G-snoc (F p) x ∙ cong (λ p → x ∷⁺ p) (GF p)
 
+transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
+transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
+  where
+  e : (x y : A) → Iso (TransClosure (op R) x y) (op (TransClosure R) x y)
+  Iso.fun (e x y) l = {!!}
+  Iso.inv (e x y) l = {!!}
+  Iso.rightInv (e x y) l = {!!}
+  Iso.leftInv (e x y) l = {!!}
+
 module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   _<⁺_ = TransClosure _<_
 
@@ -94,17 +105,18 @@ module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
     lem {x} {z} ih (y<⁺x ∷⁺ z<y) with lem ih y<⁺x
     ... | acc <z-isAcc = <z-isAcc _ [ z<y ]⁺
 
-infixr 5 _∷_
-
 module FreeCategory where
+  infixl 5 _∷_
+
   -- The reflexive-transitive closure
   data FreeCategory {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
     [] : {x : A} → FreeCategory R x x
     _∷_ : {x y z : A} → FreeCategory R x y → R y z → FreeCategory R x z
 
   module _ {_↝_ : Graph A ℓ₁} where
-  
-    _↝*_ = FreeCategory _↝_
+
+    private
+      _↝*_ = FreeCategory _↝_
 
     elim :
       (P : {x y : A} → x ↝* y → Type ℓ₂) →
@@ -175,7 +187,8 @@ module FreeGroupoid where
     coh  : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : y ↝ z) → cong (λ p → p ∷+ a) (invr p a) ≡ invl (p ∷+ a) a
 
   module _ {_↝_ : Graph X ℓ₁} where
-    _↝!_ = FreeGroupoid _↝_
+    private
+      _↝!_ = FreeGroupoid _↝_
 
     -- plain elimination principle
     elim :
