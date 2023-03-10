@@ -33,7 +33,7 @@ module Operations (P : 1Polygraph {ℓ₀} {ℓ₁}) where
   open 1Polygraph P public
 
   _↝*_ = FreeCategory.FreeCategory _↝_
-  _↝+_ = TransClosure _↝_
+  _↝+_ = FreeSemicategory.FreeSemicategory _↝_
   -- _↭_  = TransReflClosure (SymClosure _↝_)
   _↭!_ = FreeGroupoid.FreeGroupoid _↝_
   _↜_ = Graph.op _↝_
@@ -48,7 +48,7 @@ module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
 
   -- the transitive closure of reduction is well-founded
   WF+ : isWF → isWellFounded _↜+_
-  WF+ wf = subst isWellFounded (transOp _) (WFtrans _↜_ wf)
+  WF+ wf = subst isWellFounded (FreeSemicategory.onOp _) (WFtrans _↜_ wf)
 
   -- normal forms
 
@@ -63,14 +63,15 @@ module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
     -- WFloops : ({x : Σ₀} → x ↝+ x) → Σ₀ → ¬ isWF
     -- WFloops p x wf = induction (WF+ wf) (λ x' ih → ih x' p) x
 
-    WFloop : isWF → {x : Σ₀} → x ↝+ x → ⊥
+    -- well-founded graphs don't have loops
+    WFloop : isWF → {x : Σ₀} → ¬ (x ↝+ x)
     WFloop wf {x} p = lem x p
       where
       lem : (x : Σ₀) → x ↝+ x → ⊥
       lem x = induction (WF+ wf) {P = λ x → x ↝+ x → ⊥} (λ x ih q → ih x q q) x
 
     -- isNF'→isNF : isWF → {x : Σ₀} → isNF' x → isNF x
-    -- isNF'→isNF wf n p = ? -- WFloop wf (append p (n (t→rt p)))
+    -- isNF'→isNF wf n p = WFloop wf {!!} -- WFloop wf (append p (n (t→rt p)))
 
     -- -- This definition is closer to the traditional one but less nice than the
     -- -- above one.
@@ -128,7 +129,9 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   normalize wf dr x = induction (WF+ P wf) {P = isNZ P} ind x
     where
     ind : (x : Σ₀) (ih : (y : Σ₀) → x ↝+ y → isNZ P y) → isNZ P x
-    ind = {!!}
+    ind y ih with dr y
+    ... | no ¬red = y , [] , λ {z} y↝*z → ¬red {!hd' y↝*z!}
+    ... | yes p = {!!}
     -- ind y ih with dr y
     -- ... | no ¬red = y , ([] , (λ {z} y↝*z → ¬red (hd y↝*z)))
     -- ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺

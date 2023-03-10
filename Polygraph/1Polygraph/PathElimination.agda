@@ -297,8 +297,8 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
         ψ₁ refl ∙ refl ≡⟨ sym (rUnit _) ⟩
         ψ₁ refl ∎
 
-    -- path-elim-ext' : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → path-elim' (subst (_≡_ ∣ x ∣) ∣ a ∣₁ p) ≡ equivFun (Aa p a) (path-elim' p)
-    -- path-elim-ext' p a = {!!}
+    -- elimPathExt : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → elimPath (subst (_≡_ ∣ x ∣) ∣ a ∣₁ p) ≡ equivFun (Aa p a) (elimPath p)
+    -- elimPathExt p a = {!!}
       -- where
       -- lem : {!!}
       -- lem = {!cong snd (ϕ₃ a)!}

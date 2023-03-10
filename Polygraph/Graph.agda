@@ -49,15 +49,26 @@ data SymClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀
 --- The transitive closure
 ---
 
-infixl 5 _∷⁺_
+module FreeSemicategory where
 
-data TransClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
-  [_]⁺ : {a b : A} → R a b → TransClosure R a b
-  _∷⁺_ : {a b c : A} → TransClosure R b c → R a b → TransClosure R a c
+  infixl 5 _∷⁺_
+
+  data FreeSemicategory {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
+    [_]⁺ : {x y : A} → R x y → FreeSemicategory R x y
+    _∷⁺_ : {x y z : A} → FreeSemicategory R x y → R y z → FreeSemicategory R x z
+
+  module _ {A : Type ℓ₀} (R : Graph A ℓ₁) where
+    private
+      _↝_ = R
+      _↝+_ = FreeSemicategory R
 
 -- hd : {a c : A} (p : TransClosure R a c) → Σ A (λ b → R a b)
 -- hd [ x ]⁺ = _ , x
 -- hd (x ∷⁺ p) = _ , x
+
+    hd' : {x z : A} (p : x ↝+ z) → Σ A λ y → x ↝ y
+    hd' [ a ]⁺ = _ , a
+    hd' (p ∷⁺ a) = hd' p
 
 -- snoc⁺ : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
 -- snoc⁺ [ x ]⁺ y = x ∷⁺ [ y ]⁺
@@ -85,25 +96,28 @@ data TransClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ�
   -- GF [ x ]⁺ = refl
   -- GF (x ∷⁺ p) = G-snoc (F p) x ∙ cong (λ p → x ∷⁺ p) (GF p)
 
-transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
-transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
-  where
-  e : (x y : A) → Iso (TransClosure (op R) x y) (op (TransClosure R) x y)
-  Iso.fun (e x y) l = {!!}
-  Iso.inv (e x y) l = {!!}
-  Iso.rightInv (e x y) l = {!!}
-  Iso.leftInv (e x y) l = {!!}
+  onOp : (R : Graph A ℓ₁) → FreeSemicategory (op R) ≡ op (FreeSemicategory R)
+  onOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
+    where
+    e : (x y : A) → Iso (FreeSemicategory (op R) x y) (op (FreeSemicategory R) x y)
+    Iso.fun (e x y) l = {!!}
+    Iso.inv (e x y) l = {!!}
+    Iso.rightInv (e x y) l = {!!}
+    Iso.leftInv (e x y) l = {!!}
 
 module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
-  _<⁺_ = TransClosure _<_
+  open FreeSemicategory
+
+  _<⁺_ = FreeSemicategory _<_
 
   WFtrans : isWellFounded _<_ → isWellFounded _<⁺_
   WFtrans wf = induction wf λ x ih → acc λ y y<⁺x → lem ih y<⁺x
     where
     lem : {x z : A} → ((y : A) → y < x → isAcc _<⁺_ y) → z <⁺ x → isAcc _<⁺_ z
     lem ih [ z<x ]⁺ = ih _ z<x
-    lem {x} {z} ih (y<⁺x ∷⁺ z<y) with lem ih y<⁺x
-    ... | acc <z-isAcc = <z-isAcc _ [ z<y ]⁺
+    lem = {!!}
+    -- lem {x} {z} ih (y<⁺x ∷⁺ z<y) with lem ih y<⁺x
+    -- ... | acc <z-isAcc = <z-isAcc _ [ z<y ]⁺
 
 module FreeCategory where
   infixl 5 _∷_
