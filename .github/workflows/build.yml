@@ -2,16 +2,61 @@ name: Build
 
 on: [push]
 
+env:
+  GHC_VERSION: 8.6.5
+  CABAL_VERSION: 3.2.0.0
+  CABAL_INSTALL: cabal install --overwrite-policy=always --ghc-options='-O1 +RTS -M6G -RTS'
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Install packages
-      run: sudo apt-get -y install agda
-    - name: Download cubical library
+    - name: Initialise variables
       run: |
-        git clone --branch v0.2 https://github.com/agda/cubical.git
+        # Pick Agda version
+        echo "AGDA_BRANCH=v2.6.3" >> $GITHUB_ENV
+    - name: Cache cabal packages
+      uses: actions/cache@v3
+      id: cache-cabal
+      with:
+        path: |
+          ~/.cabal/packages
+          ~/.cabal/store
+          ~/.cabal/bin
+        key: ${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}
+    - name: Cache cubical library build
+      uses: actions/cache@v3
+      id: cache-library
+      with:
+        path: ./cubical
+        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('Cubical/**') }}
+        restore-keys: |
+          library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-
+    - name: Install cabal
+      if: steps.cache-cabal.outputs.cache-hit != 'true'
+      uses: haskell/actions/setup@v2
+      with:
+        ghc-version: ${{ env.GHC_VERSION }}
+        cabal-version: ${{ env.CABAL_VERSION }}
+    - name: Put cabal programs in PATH
+      run: echo "~/.cabal/bin" >> $GITHUB_PATH
+    - name: Cabal update
+      run: cabal update
+    - name: Install Agda
+      if: steps.cache-cabal.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/agda/agda --branch ${{ env.AGDA_BRANCH }} --depth=1
+        cd agda
+        mkdir -p doc
+        touch doc/user-manual.pdf
+        ${{ env.CABAL_INSTALL }}
+        cd ..
+        rm -rf agda
+    - name: Install cubical library
+      if: steps.cache-library.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/agda/cubical.git
         mkdir ~/.agda
         echo "cubical" > ~/.agda/defaults
         echo "`pwd`/cubical/cubical.agda-lib" > ~/.agda/libraries
