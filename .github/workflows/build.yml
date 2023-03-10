@@ -62,6 +62,7 @@ jobs:
       if: steps.cache-library.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/agda/cubical.git
+        rm -rf ~/.agda
         mkdir ~/.agda
         echo "cubical" > ~/.agda/defaults
         echo "`pwd`/cubical/cubical.agda-lib" > ~/.agda/libraries
