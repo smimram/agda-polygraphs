@@ -38,47 +38,49 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     whisk  : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q · r) ⇒w (p · q' · r)
     whisk⁻ : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q' · r) ⇒w (p · q · r)
 
-  -- -- TODO: rather use the groupoid closure
-  -- _⇔*_ : {x y : Σ₀} (p q : x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
-  -- _⇔*_ = TransReflClosure _⇒w_
+  -- TODO: rather use the groupoid closure
+  _⇔*_ : {x y : Σ₀} (p q : x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
+  _⇔*_ = FreeCategory _⇒w_
 
-  -- whisk-assoc : {x'' x' x y y' y'' : Σ₀} (p' : x'' ↝* x') (p : x' ↝* x) (q : x ↝* y) (r : y ↝* y') (r' : y' ↝* y'') → p' · (p · q · r) · r' ≡ (p' · p) · q · (r · r')
-  -- whisk-assoc p' p q r r' =
-    -- p' · (p · q · r) · r'   ≡⟨ cong (λ p → p' · p) (·-assoc p _ _) ⟩
-    -- p' · (p · (q · r) · r') ≡⟨ sym (·-assoc p' _ _) ⟩
-    -- (p' · p) · (q · r) · r' ≡⟨ cong (λ q → (p' · p) · q) (·-assoc q _ _) ⟩
-    -- (p' · p) · q · (r · r') ∎
+  whiskAssoc : {x'' x' x y y' y'' : Σ₀} (p' : x'' ↝* x') (p : x' ↝* x) (q : x ↝* y) (r : y ↝* y') (r' : y' ↝* y'') → p' · (p · q · r) · r' ≡ (p' · p) · q · (r · r')
+  whiskAssoc p' p q r r' =
+    p' · (p · q · r) · r'   ≡⟨ cong (λ p → p' · p) (FreeCategory.assoc p _ r') ⟩
+    p' · (p · (q · r) · r') ≡⟨ sym (FreeCategory.assoc p' p _) ⟩
+    (p' · p) · (q · r) · r' ≡⟨ cong (λ q → (p' · p) · q) (FreeCategory.assoc q _ r') ⟩
+    (p' · p) · q · (r · r') ∎
 
-  -- whisk* : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (ϕ : q ⇔* q') (r : y ↝* y') → (p · q · r) ⇔* (p · q' · r)
-  -- whisk* p [] q = []
-  -- whisk* p (whisk p' α r' ∷ ϕ) r = [≡ whisk-assoc p p' _ r' r ] · [ whisk (p · p') α (r' · r) ] · [≡ sym (whisk-assoc p p' _ r' r) ] · whisk* p ϕ r
-  -- whisk* p (whisk⁻ p' α r' ∷ ϕ) r = [≡ whisk-assoc p p' _ r' r ] · [ whisk⁻ (p · p') α (r' · r) ] · [≡ sym (whisk-assoc p p' _ r' r) ] · whisk* p ϕ r
+  whisk* : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (ϕ : q ⇔* q') (r : y ↝* y') → (p · q · r) ⇔* (p · q' · r)
+  whisk* p [] q = []
+  whisk* p (ϕ ∷ whisk p' α r') r = whisk* p ϕ r · [≡ whiskAssoc p p' _ r' r ] · [ whisk (p · p') α (r' · r) ] · [≡ sym (whiskAssoc p p' _ r' r) ]
+  whisk* p (ϕ ∷ whisk⁻ p' α r') r = whisk* p ϕ r · [≡ whiskAssoc p p' _ r' r ] · [ whisk⁻ (p · p') α (r' · r) ] · [≡ sym (whiskAssoc p p' _ r' r) ]
 
-  -- -- local confluence
-  -- isLC : (x : Σ₀) → Type _
-  -- isLC x = {y y' : Σ₀} (a : x ↝ y) (b : x ↝ y') →
-           -- Σ[ z ∈ Σ₀ ]
-           -- Σ[ p ∈ y  ↝* z ]
-           -- Σ[ q ∈ y' ↝* z ]
-           -- ([ a ] · p) ⇔* ([ b ] · q)
+  -- local confluence
+  isLC : (x : Σ₀) → Type _
+  isLC x = {y y' : Σ₀} (a : x ↝ y) (b : x ↝ y') →
+           Σ[ z ∈ Σ₀ ]
+           Σ[ p ∈ y  ↝* z ]
+           Σ[ q ∈ y' ↝* z ]
+           ([ a ] · p) ⇔* ([ b ] · q)
 
-  -- hasLC = {x : Σ₀} → isLC x
+  hasLC = {x : Σ₀} → isLC x
 
-  -- -- confluence
-  -- isC : (x : Σ₀) → Type _
-  -- isC x = {y y' : Σ₀} (p : x ↝* y) (q : x ↝* y') →
-          -- Σ[ z ∈ Σ₀ ]
-          -- Σ[ p' ∈ y  ↝* z ]
-          -- Σ[ q' ∈ y' ↝* z ]
-          -- (p · p') ⇔* (q · q')
+  -- confluence
+  isC : (x : Σ₀) → Type _
+  isC x = {y y' : Σ₀} (p : x ↝* y) (q : x ↝* y') →
+          Σ[ z ∈ Σ₀ ]
+          Σ[ p' ∈ y  ↝* z ]
+          Σ[ q' ∈ y' ↝* z ]
+          (p · p') ⇔* (q · q')
 
-  -- hasC = {x : Σ₀} → isC x
+  hasC = {x : Σ₀} → isC x
 
-  -- -- Newman's lemma
-  -- newman : isWF Σ' → hasLC → hasC
-  -- newman wf lc {x = x} = induction (WF+ Σ' wf) {P = isC} (λ x ih → lem x ih) x
-    -- where
-    -- lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
+  -- Newman's lemma
+  newman : isWF Σ' → hasLC → hasC
+  newman wf lc {x = x} = induction (WF+ Σ' wf) {P = isC} (λ x ih → lem x ih) x
+    where
+    lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
+    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]
+    lem x ih (p ∷ a) q = {!!}
     -- lem x ih [] q = _ , q , [] , [≡ sym (·-unitr _) ]
     -- lem x ih (x↝y ∷ p) [] = _ , [] , (x↝y ∷ p) , [≡ cong (λ p → x↝y ∷ p) (·-unitr p) ]
     -- lem x ih (x↝y₁ ∷ y₁↝y₁') (x↝y₂ ∷ y₂↝y₂') with lc x↝y₁ x↝y₂
@@ -93,14 +95,15 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       -- whisk* [ x↝y₂ ] y₂↝z₁↝z'⇔y₂↝y₂'↝z' [] ·
       -- [≡ cong (λ p → x↝y₂ ∷ p) (·-unitr _) ])
 
-  -- -- homotopy basis with normal targets
-  -- hasNHB = {x y : Σ₀} → isNF Σ' y → (p q : x ↝* y) → p ⇔* q
+  -- homotopy basis with normal targets
+  hasNHB = {x y : Σ₀} → isNF Σ' y → (p q : x ↝* y) → p ⇔* q
 
-  -- -- homotopy basis
-  -- hasHB = {x y : Σ₀} → (p q : x ↝* y) → p ⇔* q
+  -- homotopy basis
+  hasHB = {x y : Σ₀} → (p q : x ↝* y) → p ⇔* q
 
-  -- -- confluence implies homotopy basis with normal targets
-  -- CNHB : isSet Σ₀ → hasC → hasNHB
+  -- confluence implies homotopy basis with normal targets
+  CNHB : isSet Σ₀ → hasC → hasNHB
+  CNHB = {!!}
   -- CNHB is confl ny p q with confl p q
   -- ... | z , a ∷ y↝z , y↝z' , p⇔q = ⊥.rec (ny (rt→t a y↝z))
   -- ... | z , [] , y↝z' , p⇔q with ∷-destruct y↝z'
@@ -111,9 +114,6 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     -- lem' : y↝z' ≡ []
     -- lem' = subst (λ p → PathP (λ i → p i ↝* z) y↝z' []) lem y↝z'≡[]
   -- ... | inr (_ , a , r , y↝z'≡a∷r) = ⊥.rec (ny (rt→t a r))
-
-  -- -- -- homotopy basis
-  -- -- hasHB = {x y : Σ₀} (p q : x ↝* y) → p ⇔* q
 
   -- -- CHB : hasNZ → hasC → hasHB
   -- -- CHB nz confl p q = {!!}
@@ -227,13 +227,14 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
            -- -- {x y : ∥_∥} (p : x ≡ y) → A p
   -- -- ∥∥-path A P H {x} {y} p = {!!}
 
-  -- -- local confluence implies coherence
-  -- coherence : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
-  -- coherence is wf dr lc p q = {!!}
-    -- where
-    -- confl : hasC
-    -- confl = newman wf lc
-    -- nz : hasNZ Σ'
-    -- nz = normalize wf dr
-    -- nhb : hasNHB
-    -- nhb = CNHB is confl
+  -- local confluence implies coherence
+  coherence : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
+  coherence is wf dr lc p q = ?
+    where
+    confl : hasC
+    confl = newman wf lc
+    nz : hasNZ Σ'
+    nz = normalize wf dr
+    nhb : hasNHB
+    nhb = CNHB is confl
+

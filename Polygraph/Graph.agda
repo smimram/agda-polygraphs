@@ -11,7 +11,7 @@ open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Equiv.Dependent
 open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Univalence
-open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.GroupoidLaws as GL hiding (assoc ; lUnit)
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Data.Empty hiding (elim ; rec)
 open import Cubical.Data.Sum hiding (elim ; rec)
@@ -36,14 +36,6 @@ op R x y = R y x
 
 op² : (R : Graph A ℓ₁) → op (op R) ≡ R
 op² R = funExt λ x → funExt λ y → refl
-
----
---- Symmetric closure
----
-
-data SymClosure {A : Type ℓ₀} (R : Graph A ℓ₁) : Graph A (ℓ-max ℓ₀ ℓ₁) where
-  σ+ : {a b : A} → R a b → SymClosure R a b
-  σ- : {a b : A} → R a b → SymClosure R b a
 
 ---
 --- The transitive closure
@@ -156,24 +148,24 @@ module FreeCategory where
 -- ∷-destruct [] = inl (refl , refl)
 -- ∷-destruct (x ∷ q) = inr (_ , x , q , refl)
 
--- [_] : {a b : A} → R a b → TransReflClosure R a b
--- [ p ] = p ∷ []
+    [_] : {x y : A} → x ↝ y → x ↝* y
+    [ a ] = [] ∷ a
 
     infixr 5 _·_
     _·_ : {x y z : A} → x ↝* y → y ↝* z → x ↝* z
     p · [] = p
     p · (q ∷ a) = (p · q) ∷ a
     
--- [≡_] : {ℓ₀ ℓ₁ : Level} {A : Type ℓ₀} {R : Graph A ℓ₁} {a a' : A} → a ≡ a' → TransReflClosure R a a'
--- [≡_] {R = R} {a = a} p = J (λ a' _ → TransReflClosure R a a') [] p
+    [≡_] : {x y : A} → x ≡ y → x ↝* y
+    [≡_] {x = x} p = J (λ y _ → x ↝* y) [] p
 
--- ·-assoc : {a b c d : A} (p : TransReflClosure R a b) (q : TransReflClosure R b c) (r : TransReflClosure R c d) → (p · q) · r ≡ p · (q · r)
--- ·-assoc [] q r = refl
--- ·-assoc (x ∷ p) q r = cong (λ p → x ∷ p) (·-assoc p q r)
+    assoc : {x y z w : A} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → (p · q) · r ≡ p · (q · r)
+    assoc p q [] = refl
+    assoc p q (r ∷ a) = cong (λ p → p ∷ a) (assoc p q r)
 
--- ·-unitr : {a b : A} (p : TransReflClosure R a b) → p · [] ≡ p
--- ·-unitr [] = refl
--- ·-unitr (x ∷ p) = cong (λ p → x ∷ p) (·-unitr p)
+    lUnit : {x y : A} (p : x ↝* y) → p ≡ [] · p
+    lUnit [] = refl
+    lUnit (p ∷ a) = cong (λ p → p ∷ a) (lUnit p)
 
 -- t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
 -- t→rt [ x ]⁺ = x ∷ []
