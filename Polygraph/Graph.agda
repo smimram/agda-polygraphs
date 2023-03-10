@@ -57,18 +57,18 @@ module FreeSemicategory where
     [_]⁺ : {x y : A} → R x y → FreeSemicategory R x y
     _∷⁺_ : {x y z : A} → FreeSemicategory R x y → R y z → FreeSemicategory R x z
 
-  module _ {A : Type ℓ₀} (R : Graph A ℓ₁) where
+  module _ {A : Type ℓ₀} {R : Graph A ℓ₁} where
     private
       _↝_ = R
       _↝+_ = FreeSemicategory R
 
--- hd : {a c : A} (p : TransClosure R a c) → Σ A (λ b → R a b)
--- hd [ x ]⁺ = _ , x
--- hd (x ∷⁺ p) = _ , x
+    snoc⁺ : {x y z : A} (a : x ↝ y) (p : y ↝+ z) → x ↝+ z
+    snoc⁺ a [ b ]⁺ = [ a ]⁺ ∷⁺ b
+    snoc⁺ a (p ∷⁺ b) = (snoc⁺ a p) ∷⁺ b
 
-    hd' : {x z : A} (p : x ↝+ z) → Σ A λ y → x ↝ y
-    hd' [ a ]⁺ = _ , a
-    hd' (p ∷⁺ a) = hd' p
+    dh⁺ : {x z : A} (p : x ↝+ z) → Σ A λ y → x ↝ y
+    dh⁺ [ a ]⁺ = _ , a
+    dh⁺ (p ∷⁺ a) = dh⁺ p
 
 -- snoc⁺ : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
 -- snoc⁺ [ x ]⁺ y = x ∷⁺ [ y ]⁺
@@ -100,10 +100,12 @@ module FreeSemicategory where
   onOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
     where
     e : (x y : A) → Iso (FreeSemicategory (op R) x y) (op (FreeSemicategory R) x y)
-    Iso.fun (e x y) l = {!!}
-    Iso.inv (e x y) l = {!!}
-    Iso.rightInv (e x y) l = {!!}
-    Iso.leftInv (e x y) l = {!!}
+    Iso.fun (e x y) [ a ]⁺ = [ a ]⁺
+    Iso.fun (e x y) (p ∷⁺ a) = {!!}
+    Iso.inv (e x y) [ a ]⁺ = [ a ]⁺
+    Iso.inv (e x y) (p ∷⁺ a) = {!!}
+    Iso.rightInv (e x y) p = {!!}
+    Iso.leftInv (e x y) p = {!!}
 
 module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   open FreeSemicategory
@@ -115,9 +117,8 @@ module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
     where
     lem : {x z : A} → ((y : A) → y < x → isAcc _<⁺_ y) → z <⁺ x → isAcc _<⁺_ z
     lem ih [ z<x ]⁺ = ih _ z<x
-    lem = {!!}
-    -- lem {x} {z} ih (y<⁺x ∷⁺ z<y) with lem ih y<⁺x
-    -- ... | acc <z-isAcc = <z-isAcc _ [ z<y ]⁺
+    lem  {x} {z} ih (z<⁺y ∷⁺ y<x) with lem ih [ y<x ]⁺
+    ... | acc <z-isAcc = <z-isAcc _ z<⁺y
 
 module FreeCategory where
   infixl 5 _∷_
@@ -145,7 +146,11 @@ module FreeCategory where
       ((x : A) → P) →
       ({x y z : A} → x ↝* y → y ↝ z → P) →
       {x y : A} → x ↝* y → P
-    rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {a} → P[] a) P∷
+    rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {x} → P[] x) P∷
+
+    snoc : {x y z : A} → x ↝ y → y ↝* z → x ↝* z
+    snoc a [] = [] ∷ a
+    snoc a (p ∷ b) = (snoc a p) ∷ b
 
 -- ∷-destruct : {a c : A} (q : TransReflClosure R a c) → (Σ (a ≡ c) (λ p → PathP (λ i → TransReflClosure R (p i) c) q [])) ⊎ Σ A (λ b → Σ (R a b) λ x → Σ (TransReflClosure R b c) λ p → q ≡ x ∷ p)
 -- ∷-destruct [] = inl (refl , refl)

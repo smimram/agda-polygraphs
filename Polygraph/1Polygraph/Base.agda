@@ -122,6 +122,7 @@ module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
 module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   open Operations P
 
+  open FreeSemicategory
   open FreeCategory hiding (elim)
 
   -- everybody has a normal form
@@ -130,12 +131,9 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
     where
     ind : (x : Σ₀) (ih : (y : Σ₀) → x ↝+ y → isNZ P y) → isNZ P x
     ind y ih with dr y
-    ... | no ¬red = y , [] , λ {z} y↝*z → ¬red {!hd' y↝*z!}
-    ... | yes p = {!!}
-    -- ind y ih with dr y
-    -- ... | no ¬red = y , ([] , (λ {z} y↝*z → ¬red (hd y↝*z)))
-    -- ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺
-    -- ... | z , y'↝z , nz = z , (y↝y' ∷ y'↝z) , nz
+    ... | no ¬red = y , [] , λ {z} y↝*z → ¬red (dh⁺ y↝*z)
+    ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺
+    ... | z , y'↝z , nz = z , snoc y↝y' y'↝z , nz
 
   elim : (A : ⟦ P ⟧ → Type ℓ₃) (f₀ : (x : Σ₀) → A ∣ x ∣) (f : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A (∣ a ∣₁ i)) (f₀ x) (f₀ y)) (x : ⟦ P ⟧) → A x
   elim A f₀ f ∣ x ∣ = f₀ x
