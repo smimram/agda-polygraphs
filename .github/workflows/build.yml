@@ -29,8 +29,10 @@ jobs:
       uses: actions/cache@v3
       id: cache-library
       with:
-        path: ./cubical
-        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('cubical/**') }}
+        path: |
+          ~/.agda
+          ~/cubical
+        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('cubical/**') }}-x
         restore-keys: |
           library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-
     - name: Install cabal
