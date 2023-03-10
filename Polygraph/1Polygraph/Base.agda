@@ -1,4 +1,6 @@
-{-# OPTIONS --cubical --allow-unsolved-metas #-}
+{-# OPTIONS --cubical #-}
+
+module 1Polygraph.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function as Fun
@@ -16,8 +18,6 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Relation.Nullary
 open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 open import Cubical.HITs.SetTruncation as ST hiding (rec ; elim)
-
-module 1Polygraph.Base where
 
 open import Graph
 

@@ -159,11 +159,11 @@ module FreeCategory where
 -- [_] : {a b : A} → R a b → TransReflClosure R a b
 -- [ p ] = p ∷ []
 
--- infixr 5 _·_
--- _·_ : {a b c : A} → TransReflClosure R a b → TransReflClosure R b c → TransReflClosure R a c
--- [] · q = q
--- (x ∷ p) · q = x ∷ (p · q)
-
+    infixr 5 _·_
+    _·_ : {x y z : A} → x ↝* y → y ↝* z → x ↝* z
+    p · [] = p
+    p · (q ∷ a) = (p · q) ∷ a
+    
 -- [≡_] : {ℓ₀ ℓ₁ : Level} {A : Type ℓ₀} {R : Graph A ℓ₁} {a a' : A} → a ≡ a' → TransReflClosure R a a'
 -- [≡_] {R = R} {a = a} p = J (λ a' _ → TransReflClosure R a a') [] p
 
