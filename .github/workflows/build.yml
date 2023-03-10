@@ -30,7 +30,7 @@ jobs:
       id: cache-library
       with:
         path: ./cubical
-        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('Cubical/**') }}
+        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('cubical/**') }}
         restore-keys: |
           library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-
     - name: Install cabal
@@ -40,8 +40,11 @@ jobs:
         ghc-version: ${{ env.GHC_VERSION }}
         cabal-version: ${{ env.CABAL_VERSION }}
     - name: Put cabal programs in PATH
-      run: echo "~/.cabal/bin" >> $GITHUB_PATH
+      run: |
+        echo "~/.cabal/bin" >> $GITHUB_PATH
+        ls ~/.cabal/bin
     - name: Cabal update
+      if: steps.cache-cabal.outputs.cache-hit != 'true'
       run: cabal update
     - name: Install Agda
       if: steps.cache-cabal.outputs.cache-hit != 'true'
