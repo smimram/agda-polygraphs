@@ -45,9 +45,7 @@ funPath {X = X} {A = A} {B = B} {x = x} f g p = J (λ y p → (g : A y → B y) 
     q a ∙ (cong g (substRefl {B = A} a) ∙ cong g (sym (substRefl {B = A} a))) ≡⟨ cong (_∙_ _) (rCancel _) ⟩
     q a ∙ refl ≡⟨ sym (rUnit _) ⟩
     q a ∎
-  Iso.leftInv (e g) q = {!!}
-    -- funExt (λ a → (sym (substRefl {B = B} (f a))) ∙ (substRefl {B = B} (f a) ∙ funExt⁻ q a ∙ cong g (sym (substRefl {B = A} a))) ∙ cong g (substRefl {B = A} a)) ≡⟨ {!!} ⟩
-    -- q ∎
+  Iso.leftInv (e g) q = cong funExt (funExt lem)
     where
     lem : (a : A x) → (sym (substRefl {B = B} (f a))) ∙ (substRefl {B = B} (f a) ∙ funExt⁻ q a ∙ cong g (sym (substRefl {B = A} a))) ∙ cong g (substRefl {B = A} a) ≡ funExt⁻ q a
     lem a =
