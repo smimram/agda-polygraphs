@@ -68,8 +68,8 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
     -- Note: there is no content in initiality since this is a proposition (and
     -- this makes Agda loop for nothing)
     abstract
-      initDI : isInitial D DI
-      initDI (L , p) = subst isContr (sym lem5 ∙ sym lem2) lem6
+      isInitialDI : isInitial D DI
+      isInitialDI (L , p) = subst isContr (sym lem5 ∙ sym lem2) lem6
         where
         lem : ({n : ⟦ P ⟧} → fst DI n → L n) ≃ (((n , p) : Σ ⟦ P ⟧ λ n → fst DI n) → L n)
         -- curryfication
@@ -200,21 +200,17 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
     isContr≃ e = isOfHLevelRespectEquiv 0 e
 
     abstract
-      initCI : isInitial C CI
-      initCI X = subst (λ X → isContr (hom C CI X)) fgX lem
+      isInitialCI : isInitial C CI
+      isInitialCI X = subst (λ X → isContr (hom C CI X)) fgX lem
         where
         f : obj D → obj C
         f = equivFun obj≃
         g : obj C → obj D
         g = invEq obj≃
         lem : isContr (hom C CI (f (g X)))
-        lem = isOfHLevelRespectEquiv 0 (hom≃ DI (g X)) (initDI (g X))
+        lem = isOfHLevelRespectEquiv 0 (hom≃ DI (g X)) (isInitialDI (g X))
         fgX : f (g X) ≡ X
         fgX = secEq obj≃ X
-
-    abstract
-      initCI' : (X : obj C) (f : hom C CI X) (g : hom C CI X) → f ≡ g
-      initCI' X f g = isContr→isProp (initCI X) f g
 
   module _
     {x : Σ₀}
@@ -240,7 +236,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
       X = (λ y → Σ (∣ x ∣ ≡ ∣ y ∣) A) , (refl , Ar) , λ {y} {z} a → Σ-cong-equiv (pathToEquiv (cong (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁)) λ p → Aa p a
 
       ϕ : hom C CI X
-      ϕ = fst (initCI X)
+      ϕ = fst (isInitialCI X)
 
       ϕ₁ = fst ϕ
       ϕ₂ = fst (snd ϕ)
@@ -258,7 +254,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
       ϕ⋆ψ = _⋆_ C {CI} {X} {CI} ϕ ψ
 
       ϕ⋆ψ≡id : ϕ⋆ψ ≡ Magmoid.id C CI
-      ϕ⋆ψ≡id = initCI' CI _ _
+      ϕ⋆ψ≡id = isContr→isProp (isInitialCI CI) ϕ⋆ψ (Magmoid.id C CI)
 
       ψ₁ : {y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → fst (ϕ₁ p) ≡ p
       ψ₁ p = lem p
