@@ -137,9 +137,9 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
       where
       e : Iso (Σ (⟦ P ⟧ → Type ℓ) (λ L → L ∣ x ∣)) (Σ (Σ₀ → Type ℓ) (λ K → K x × ({y z : Σ₀} (a : y ↝ z) → K y ≃ K z)))
       Iso.fun e (L , p) = (λ n → L ∣ n ∣) , p , λ a → pathToEquiv (cong L ∣ a ∣₁)
-      Iso.inv e (K , r , e) = (rec P {f₀ = K} (λ a → ua (e a))) , r
+      Iso.inv e (K , r , e) = (rec {f₀ = K} (λ a → ua (e a))) , r
       Iso.rightInv e (K , r , e) = ΣPathP (refl , ΣPathP (refl , implicitFunExt (implicitFunExt (funExt λ a → pathToEquiv-ua (e a)))))
-      Iso.leftInv e (L , p) = ΣPathP ((funExt (elim (λ n → rec P (λ a → ua (pathToEquiv (cong L ∣ a ∣₁))) n ≡ L n) (λ _ → refl) lem)) , refl)
+      Iso.leftInv e (L , p) = ΣPathP ((funExt (elim (λ n → rec (λ a → ua (pathToEquiv (cong L ∣ a ∣₁))) n ≡ L n) (λ _ → refl) lem)) , refl)
         where
         lem : {y z : Σ₀} (a : y ↝ z) → PathP (λ i → ua (pathToEquiv (cong L ∣ a ∣₁)) i ≡ L (∣ a ∣₁ i)) (λ _ → L ∣ y ∣) (λ _ → L ∣ z ∣)
         lem {y} {z} a = compPathL→PathP lem'

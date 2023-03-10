@@ -76,7 +76,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   -- Newman's lemma
   newman : isWF Σ' → hasLC → hasC
-  newman wf lc {x = x} = induction (WF+ Σ' wf) {P = isC} (λ x ih → lem x ih) x
+  newman wf lc {x = x} = induction (WF+ wf) {P = isC} (λ x ih → lem x ih) x
     where
     lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
     lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]
@@ -96,7 +96,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       -- [≡ cong (λ p → x↝y₂ ∷ p) (·-unitr _) ])
 
   -- homotopy basis with normal targets
-  hasNHB = {x y : Σ₀} → isNF Σ' y → (p q : x ↝* y) → p ⇔* q
+  hasNHB = {x y : Σ₀} → isNF y → (p q : x ↝* y) → p ⇔* q
 
   -- homotopy basis
   hasHB = {x y : Σ₀} → (p q : x ↝* y) → p ⇔* q
@@ -115,8 +115,22 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     -- lem' = subst (λ p → PathP (λ i → p i ↝* z) y↝z' []) lem y↝z'≡[]
   -- ... | inr (_ , a , r , y↝z'≡a∷r) = ⊥.rec (ny (rt→t a r))
 
-  -- -- CHB : hasNZ → hasC → hasHB
-  -- -- CHB nz confl p q = {!!}
+  -- local confluence implies coherence
+  HB : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
+  HB is wf dr lc {x} {y} p q = {!!}
+    where
+    C : hasC
+    C = newman wf lc
+    NZ : hasNZ Σ'
+    NZ = normalize wf dr
+    NHB : hasNHB
+    NHB = CNHB is C
+    z : Σ₀
+    z = NZ y .fst
+    nz : isNF z
+    nz = NZ y .snd .snd
+    r : y ↝* z
+    r = NZ y .snd .fst
 
   -- -- -- The presented type
   -- -- data ∥_∥' : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
@@ -226,15 +240,4 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
            -- -- ({x y : Σ₀} (p : x ↝* y) → A (cong ∣_∣' ∣ p ∣*)) →
            -- -- {x y : ∥_∥} (p : x ≡ y) → A p
   -- -- ∥∥-path A P H {x} {y} p = {!!}
-
-  -- local confluence implies coherence
-  coherence : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
-  coherence is wf dr lc p q = ?
-    where
-    confl : hasC
-    confl = newman wf lc
-    nz : hasNZ Σ'
-    nz = normalize wf dr
-    nhb : hasNHB
-    nhb = CNHB is confl
 
