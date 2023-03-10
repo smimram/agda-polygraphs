@@ -217,23 +217,20 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
     (A : {y : Σ₀}
     (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type ℓ)
     (Ar : A refl)
-    -- (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (p ∙ ∣ a ∣₁))
-    (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (subst (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁ p))
+    (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (p ∙ ∣ a ∣₁))
+    -- (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (subst (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁ p))
     where
 
     open Magmoids x
 
     private
       -- the two natural variants of Aa are equivalent
-      compPathrEquivEquiv : {ℓ : Level} {A : Type ℓ} {x y z : A} (p : y ≡ z) → pathToEquiv (cong (λ y → x ≡ y) p) ≡ compPathrEquiv p
-      compPathrEquivEquiv {x = x} {y = y} p = equivEq (funExt lem)
-        where
-        lem : (q : x ≡ y) → subst (_≡_ x) p q ≡ q ∙ p
-        lem q = fromPathP (compPath-filler q p)
+      substEquivComp : {ℓ : Level} {A : Type ℓ} {x y z : A} (p : y ≡ z) (q : x ≡ y) → subst (_≡_ x) p q ≡ q ∙ p
+      substEquivComp p q = fromPathP (compPath-filler q p)
 
       -- our arguments, seen as an object of C
       X : obj C
-      X = (λ y → Σ (∣ x ∣ ≡ ∣ y ∣) A) , (refl , Ar) , λ {y} {z} a → Σ-cong-equiv (pathToEquiv (cong (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁)) λ p → Aa p a
+      X = (λ y → Σ (∣ x ∣ ≡ ∣ y ∣) A) , (refl , Ar) , λ {y} {z} a → Σ-cong-equiv (compPathrEquiv ∣ a ∣₁) λ p → Aa p a
 
       ϕ : hom C CI X
       ϕ = fst (isInitialCI X)
@@ -248,7 +245,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
         f : {y : Σ₀} → Σ (∣ x ∣ ≡ ∣ y ∣) A → ∣ x ∣ ≡ ∣ y ∣
         f (p , _) = p
         γ : {y z : Σ₀} (a : y ↝ z) (k : Σ (∣ x ∣ ≡ ∣ y ∣) A) → subst (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁ (f k) ≡ f (equivFun (snd (snd X) a) k)
-        γ a (p , n) = refl
+        γ a (p , n) = substEquivComp ∣ a ∣₁ (f (p , n))
 
       ϕ⋆ψ : hom C CI CI
       ϕ⋆ψ = _⋆_ C {CI} {X} {CI} ϕ ψ
