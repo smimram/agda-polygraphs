@@ -15,7 +15,7 @@ open import Cubical.Relation.Nullary
 open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 
 open import Graph
-open Graph.FreeCategory
+open Graph.FreeCategory hiding (elim)
 open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
 
 private variable
@@ -179,45 +179,45 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     -- lem : cong (rec f₁ f₂) (cong ∣_∣' ∣ p ∣*) ≡ cong (rec f₁ f₂) (cong ∣_∣' ∣ q ∣*)
     -- lem = lem' p ∙ f₂ α ∙ sym (lem' q)
 
-  -- congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
-  -- congFunct-dep' {A = A} {B = B} f p q = J (λ y p → {z : A} (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)) lem p q
-    -- where
-    -- lem : {y z : A} (q : y ≡ z) → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)
-    -- -- lem {y} {z} q =
-      -- -- cong f (refl ∙ q) ≡⟨ {!!} ⟩
-      -- -- subst (λ p → PathP (λ i → B (p i)) (f y) (f z)) (lUnit q) (cong f q) ≡⟨ {!!} ⟩
-      -- -- compPathP' {B = B} refl (cong f q) ≡⟨ refl ⟩
-      -- -- compPathP' {B = B} (cong f refl) (cong f q) ∎
-    -- lem = J (λ z q → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)) lem'
-      -- where
-      -- lem' : cong f (refl ∙ refl) ≡ compPathP' {B = B} (cong f refl) (cong f refl)
-      -- lem' =
-        -- cong f (refl ∙ refl) ≡⟨ {!!} ⟩
-        -- compPathP' {B = B} refl refl ≡⟨ refl ⟩
-        -- compPathP' {B = B} (cong f refl) (cong f refl) ∎
+  congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
+  congFunct-dep' {A = A} {B = B} f p q = J (λ y p → {z : A} (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)) lem p q
+    where
+    lem : {y z : A} (q : y ≡ z) → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)
+    -- lem {y} {z} q =
+      -- cong f (refl ∙ q) ≡⟨ {!!} ⟩
+      -- subst (λ p → PathP (λ i → B (p i)) (f y) (f z)) (lUnit q) (cong f q) ≡⟨ {!!} ⟩
+      -- compPathP' {B = B} refl (cong f q) ≡⟨ refl ⟩
+      -- compPathP' {B = B} (cong f refl) (cong f q) ∎
+    lem = J (λ z q → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)) lem'
+      where
+      lem' : cong f (refl ∙ refl) ≡ compPathP' {B = B} (cong f refl) (cong f refl)
+      lem' =
+        cong f (refl ∙ refl) ≡⟨ {!!} ⟩
+        compPathP' {B = B} refl refl ≡⟨ refl ⟩
+        compPathP' {B = B} (cong f refl) (cong f refl) ∎
 
-  -- -- the induction principle
-  -- elim :
-    -- {ℓ₂ : Level}
-    -- (A : ⟦_⟧ → Type ℓ₂) →
-    -- (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
-    -- (f₁ : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A ∣ ∣ a ∣₁ i ∣') (f₀ x) (f₀ y))
-    -- (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (*P (A ∘ ∣_∣') f₁ p) (*P (A ∘ ∣_∣') f₁ q))
-    -- (x : ⟦_⟧) → A x
-  -- elim A f₀ f₁ f₂ ∣ x ∣' = 1Pol.elim (A ∘ ∣_∣') f₀ f₁ x
-  -- elim A f₀ f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
-    -- where
-    -- lem' : {x y : Σ₀} (p : x ↝* y) → cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ≡ *P (A ∘ ∣_∣') f₁ p
-    -- lem' [] = refl
-    -- lem' (a ∷ p) =
-      -- cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∷ p ∣* ≡⟨ refl ⟩
-      -- cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) (∣ a ∣₁ ∙ ∣ p ∣*) ≡⟨ congFunct-dep' (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁ ∣ p ∣* ⟩
-      -- -- compPathP' {B = A ∘ ∣_∣'} (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) ≡⟨ cong (compPathP' {B = A ∘ ∣_∣'} (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁)) (lem' p) ⟩
-      -- compPathP' {B = A ∘ ∣_∣'} (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) (*P (A ∘ ∣_∣') f₁ p) ≡⟨ refl ⟩
-      -- compPathP' {B = A ∘ ∣_∣'} (f₁ a) (*P (A ∘ ∣_∣') f₁ p) ≡⟨ refl ⟩
-      -- *P (A ∘ ∣_∣') f₁ (a ∷ p) ∎
-    -- lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Pol.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
-    -- lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
+  -- the induction principle
+  elim :
+    {ℓ₂ : Level}
+    (A : ⟦_⟧ → Type ℓ₂) →
+    (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
+    (f₁ : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A ∣ ∣ a ∣₁ i ∣') (f₀ x) (f₀ y))
+    (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (*P (A ∘ ∣_∣') f₁ p) (*P (A ∘ ∣_∣') f₁ q))
+    (x : ⟦_⟧) → A x
+  elim A f₀ f₁ f₂ ∣ x ∣' = 1Polygraph.elim (A ∘ ∣_∣') f₀ f₁ x
+  elim A f₀ f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
+    where
+    lem' : {x y : Σ₀} (p : x ↝* y) → cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ≡ *P (A ∘ ∣_∣') f₁ p
+    lem' [] = refl
+    lem' (p ∷ a) =
+      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∷ a ∣* ≡⟨ refl ⟩
+      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct-dep' (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ∣ a ∣₁ ⟩
+      compPathP' {B = A ∘ ∣_∣'} (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ cong (λ p → compPathP' {B = A ∘ ∣_∣'} p (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁)) (lem' p) ⟩
+      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ refl ⟩
+      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (f₁ a) ≡⟨ refl ⟩
+      *P (A ∘ ∣_∣') f₁ (p ∷ a) ∎
+    lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
+    lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
 
   -- -- -- in order to show a property about points it is enough to show it on
   -- -- -- constructible ones

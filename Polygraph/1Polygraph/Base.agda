@@ -154,10 +154,10 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   (f *) [] = refl
   (f *) (p ∷ a) = (f *) p ∙ f a
 
-  -- -- dependent version
-  -- *P : (A : ⟦ P ⟧ → Type ℓ₃) {f₀ : (x : Σ₀) → A ∣ x ∣} (f : {x y : Σ₀} (α : x ↝ y) → PathP (λ i → A (∣ α ∣₁ i)) (f₀ x) (f₀ y)) {x y : Σ₀} (p : x ↝* y) → PathP (λ i → A (∣ p ∣* i)) (f₀ x) (f₀ y)
-  -- *P A f [] = refl
-  -- *P A f {x} {y} (a ∷ p) = compPathP' {B = A} (f a) (*P A f p)
+  -- dependent version
+  *P : (A : ⟦ P ⟧ → Type ℓ₃) {f₀ : (x : Σ₀) → A ∣ x ∣} (f : {x y : Σ₀} (α : x ↝ y) → PathP (λ i → A (∣ α ∣₁ i)) (f₀ x) (f₀ y)) {x y : Σ₀} (p : x ↝* y) → PathP (λ i → A (∣ p ∣* i)) (f₀ x) (f₀ y)
+  *P A f [] = refl
+  *P A f {x} {y} (p ∷ a) = compPathP' {B = A} (*P A f p) (f a)
 
 -- module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
   -- open 1Operations P
