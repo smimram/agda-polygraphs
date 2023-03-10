@@ -148,7 +148,7 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
 
   ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
   ∣ [] ∣* = refl
-  ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ p ∣₁
+  ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ a ∣₁
 
   _* : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} → x ↝* y → f₀ x ≡ f₀ y
   (f *) [] = refl

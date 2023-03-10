@@ -16,20 +16,20 @@ open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 
 open import Graph
 open Graph.FreeCategory
-open import 1Polygraph as 1Pol renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
+open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
 
 private variable
-  ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
+  ℓ ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
 
 -- 2-polygraphs, type-theoretic definition
 record 2Polygraph : Type (ℓ-suc (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))) where
   field
-    Σ'   : 1Polygraph {ℓ₀} {ℓ₁}
+    Σ'  : 1Polygraph {ℓ₀} {ℓ₁}
     _⇒_ : {x y : 1Polygraph.Σ₀ Σ'} → Graph (FreeCategory (1Polygraph._↝_ Σ') x y) ℓ₂
 
 module Operations (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   open 2Polygraph P public
-  open 1Pol.Operations Σ' public
+  open 1Polygraph.Operations Σ' public
 
 module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   open Operations P
@@ -82,7 +82,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     where
     lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
     lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]
-    lem x ih (p ∷ a) q = {!!}
+    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]
+    lem x ih (p ∷ a) (q ∷ b) = {!!}
     -- lem x ih [] q = _ , q , [] , [≡ sym (·-unitr _) ]
     -- lem x ih (x↝y ∷ p) [] = _ , [] , (x↝y ∷ p) , [≡ cong (λ p → x↝y ∷ p) (·-unitr p) ]
     -- lem x ih (x↝y₁ ∷ y₁↝y₁') (x↝y₂ ∷ y₂↝y₂') with lc x↝y₁ x↝y₂
@@ -136,33 +137,24 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     ϕ : p · r ⇔* q · r
     ϕ = NHB nz (p · r) (q · r)
 
-  -- -- -- The presented type
-  -- -- data ∥_∥' : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    -- -- ∣_∣  : Σ₀ → ∥_∥'
-    -- -- ∣_∣₁ : {x y : Σ₀} → x ↝ y → ∣ x ∣ ≡ ∣ y ∣
+  -- data ∥_∥ : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
+    -- ∣_∣ : ∥_∥' → ∥_∥
+    -- ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → cong ∣_∣ ∣ p ∣* ≡ cong ∣_∣ ∣ q ∣*
 
-  -- -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
-  -- -- ∣ [] ∣* = refl
-  -- -- ∣ x ∷ p ∣* = ∣ x ∣₁ ∙ ∣ p ∣*
+  --- TODO: we cannot define the presented category at once because the output
+  --- type of ∣_∣* uses constructors from pres...
+  -- data pres : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
+  -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
 
-  -- -- data ∥_∥ : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    -- -- ∣_∣ : ∥_∥' → ∥_∥
-    -- -- ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → cong ∣_∣ ∣ p ∣* ≡ cong ∣_∣ ∣ q ∣*
+  -- data pres : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
+  -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → inj x ≡ inj y
 
-  -- --- TODO: we cannot define the presented category at once because the output
-  -- --- type of ∣_∣* uses constructors from pres...
-  -- -- data pres : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
-  -- -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
+  -- data pres where
+    -- inj : Σ₀ → pres
 
-  -- -- data pres : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
-  -- -- ∣_∣* : {x y : Σ₀} → (x ↝* y) → inj x ≡ inj y
-
-  -- -- data pres where
-    -- -- inj : Σ₀ → pres
-
-  -- data ⟦_⟧ : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    -- ∣_∣' : ⟦ Σ' ⟧₁ → ⟦_⟧
-    -- ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → cong ∣_∣' ∣ p ∣* ≡ cong ∣_∣' ∣ q ∣*
+  data ⟦_⟧ : Type (ℓ-max (ℓ-max ℓ₀ ℓ₁) ℓ₂) where
+    ∣_∣' : ⟦ Σ' ⟧₁ → ⟦_⟧
+    ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → cong ∣_∣' ∣ p ∣* ≡ cong ∣_∣' ∣ q ∣*
 
   -- -- I think that this ought to be terminating here (and in fact induction below, is terminating...)
   -- {-# TERMINATING #-}
