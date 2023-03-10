@@ -38,6 +38,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     whisk  : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q · r) ⇒w (p · q' · r)
     whisk⁻ : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q' · r) ⇒w (p · q · r)
 
+  infix 4 _⇔*_
+
   -- TODO: rather use the groupoid closure
   _⇔*_ : {x y : Σ₀} (p q : x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
   _⇔*_ = FreeCategory _⇒w_
@@ -96,7 +98,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       -- [≡ cong (λ p → x↝y₂ ∷ p) (·-unitr _) ])
 
   -- homotopy basis with normal targets
-  hasNHB = {x y : Σ₀} → isNF y → (p q : x ↝* y) → p ⇔* q
+  hasNHB = {x y : Σ₀} → isNF {P = Σ'} y → (p q : x ↝* y) → p ⇔* q
 
   -- homotopy basis
   hasHB = {x y : Σ₀} → (p q : x ↝* y) → p ⇔* q
@@ -131,6 +133,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     nz = NZ y .snd .snd
     r : y ↝* z
     r = NZ y .snd .fst
+    ϕ : p · r ⇔* q · r
+    ϕ = NHB nz (p · r) (q · r)
 
   -- -- -- The presented type
   -- -- data ∥_∥' : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
