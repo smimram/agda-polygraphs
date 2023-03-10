@@ -179,7 +179,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     -- lem : cong (rec f₁ f₂) (cong ∣_∣' ∣ p ∣*) ≡ cong (rec f₁ f₂) (cong ∣_∣' ∣ q ∣*)
     -- lem = lem' p ∙ f₂ α ∙ sym (lem' q)
 
-  congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
+  congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z)
+                   → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
   congFunct-dep' {A = A} {B = B} f p q = J (λ y p → {z : A} (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)) lem p q
     where
     lem : {y z : A} (q : y ≡ z) → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)
@@ -218,22 +219,4 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       *P (A ∘ ∣_∣') f₁ (p ∷ a) ∎
     lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
     lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
-
-  -- -- -- in order to show a property about points it is enough to show it on
-  -- -- -- constructible ones
-  -- -- ∥∥-point : (A : (x : ⟦_⟧) → Type ℓ₂) →
-            -- -- ((x : ∥_∥) → isProp (A x)) →
-            -- -- ((x : Σ₀) → A ∣ ∣ x ∣ ∣') →
-            -- -- (x : ∥_∥) → A x
-  -- -- ∥∥-point A P H x = ∥∥-ind A H (λ _ → toPathP (P _ _ _))
-    -- -- {!!} -- by (dependent variant of) P
-    -- -- x
-
-  -- -- -- in order to show a property about paths it is enough to show it on
-  -- -- -- constructible paths
-  -- -- ∥∥-path : (A : {x y : ∥_∥} (p : x ≡ y) → Type ℓ₂) →
-           -- -- ({x y : ∥_∥} (p : x ≡ y) → isProp (A p)) →
-           -- -- ({x y : Σ₀} (p : x ↝* y) → A (cong ∣_∣' ∣ p ∣*)) →
-           -- -- {x y : ∥_∥} (p : x ≡ y) → A p
-  -- -- ∥∥-path A P H {x} {y} p = {!!}
 
