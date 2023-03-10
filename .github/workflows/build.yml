@@ -64,4 +64,6 @@ jobs:
         echo "cubical" > ~/.agda/defaults
         echo "`pwd`/cubical/cubical.agda-lib" > ~/.agda/libraries
     - name: Build Agda
-      run: make
+      run: |
+        export PATH=~/.cabal/bin:$PATH
+        make
