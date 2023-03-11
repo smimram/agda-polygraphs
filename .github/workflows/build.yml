@@ -44,7 +44,6 @@ jobs:
     - name: Put cabal programs in PATH
       run: |
         echo "~/.cabal/bin" >> $GITHUB_PATH
-        ls ~/.cabal/bin
     - name: Cabal update
       if: steps.cache-cabal.outputs.cache-hit != 'true'
       run: cabal update
