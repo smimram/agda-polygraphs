@@ -32,9 +32,7 @@ jobs:
         path: |
           ~/.agda
           ~/cubical
-        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-${{ hashFiles('cubical/**') }}
-        restore-keys: |
-          library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}-
+        key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}
     - name: Install cabal
       if: steps.cache-cabal.outputs.cache-hit != 'true'
       uses: haskell/actions/setup@v2
