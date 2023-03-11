@@ -118,25 +118,6 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     -- lem' = subst (λ p → PathP (λ i → p i ↝* z) y↝z' []) lem y↝z'≡[]
   -- ... | inr (_ , a , r , y↝z'≡a∷r) = ⊥.rec (ny (rt→t a r))
 
-  -- local confluence implies coherence
-  HB : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
-  HB is wf dr lc {x} {y} p q = {!!}
-    where
-    C : hasC
-    C = newman wf lc
-    NZ : hasNZ Σ'
-    NZ = normalize wf dr
-    NHB : hasNHB
-    NHB = CNHB is C
-    z : Σ₀
-    z = NZ y .fst
-    nz : isNF z
-    nz = NZ y .snd .snd
-    r : y ↝* z
-    r = NZ y .snd .fst
-    ϕ : p · r ⇔* q · r
-    ϕ = NHB nz (p · r) (q · r)
-
   -- data ∥_∥ : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
     -- ∣_∣ : ∥_∥' → ∥_∥
     -- ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → cong ∣_∣ ∣ p ∣* ≡ cong ∣_∣ ∣ q ∣*
@@ -220,3 +201,26 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
     lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
 
+  -- local confluence implies coherence
+  module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
+    private
+      C : hasC
+      C = newman WF LC
+
+      NZ : hasNZ Σ'
+      NZ = normalize WF DR
+
+      NHB : hasNHB
+      NHB = CNHB S₀ C
+
+  -- HB : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
+  -- HB is wf dr lc {x} {y} p q = {!!}
+    -- where
+    -- z : Σ₀
+    -- z = NZ y .fst
+    -- nz : isNF z
+    -- nz = NZ y .snd .snd
+    -- r : y ↝* z
+    -- r = NZ y .snd .fst
+    -- ϕ : p · r ⇔* q · r
+    -- ϕ = NHB nz (p · r) (q · r)

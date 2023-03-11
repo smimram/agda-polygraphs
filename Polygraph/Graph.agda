@@ -56,33 +56,33 @@ module FreeSemicategory where
       _↝_ = R
       _↝+_ = FreeSemicategory R
 
-    snoc⁺ : {x y z : A} (a : x ↝ y) (p : y ↝+ z) → x ↝+ z
-    snoc⁺ a [ b ]⁺ = [ a ]⁺ ∷⁺ b
-    snoc⁺ a (p ∷⁺ b) = (snoc⁺ a p) ∷⁺ b
+    snoc : {x y z : A} (a : x ↝ y) (p : y ↝+ z) → x ↝+ z
+    snoc a [ b ]⁺ = [ a ]⁺ ∷⁺ b
+    snoc a (p ∷⁺ b) = (snoc a p) ∷⁺ b
 
-    dh⁺ : {x z : A} (p : x ↝+ z) → Σ A λ y → x ↝ y
-    dh⁺ [ a ]⁺ = _ , a
-    dh⁺ (p ∷⁺ a) = dh⁺ p
+    dh : {x z : A} (p : x ↝+ z) → Σ A λ y → x ↝ y
+    dh [ a ]⁺ = _ , a
+    dh (p ∷⁺ a) = dh p
 
--- snoc⁺ : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
--- snoc⁺ [ x ]⁺ y = x ∷⁺ [ y ]⁺
--- snoc⁺ (x ∷⁺ p) y = x ∷⁺ snoc⁺ p y
+-- snoc : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
+-- snoc [ x ]⁺ y = x ∷⁺ [ y ]⁺
+-- snoc (x ∷⁺ p) y = x ∷⁺ snoc p y
 
 -- transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
 -- transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (iso F G FG GF))
   -- where
   -- F  : {x y : A} → TransClosure (op R) x y → op (TransClosure R) x y
   -- F [ x ]⁺ = [ x ]⁺
-  -- F (x ∷⁺ p) = snoc⁺ (F p) x
+  -- F (x ∷⁺ p) = snoc (F p) x
   -- G : {x y : A} → op (TransClosure R) x y → TransClosure (op R) x y
   -- G [ x ]⁺ = [ x ]⁺
-  -- G (x ∷⁺ p) = snoc⁺ (G p) x
-  -- F-snoc : {x y z : A} (p : TransClosure (op R) x y) (q : R z y) → F (snoc⁺ p q) ≡ q ∷⁺ (F p)
+  -- G (x ∷⁺ p) = snoc (G p) x
+  -- F-snoc : {x y z : A} (p : TransClosure (op R) x y) (q : R z y) → F (snoc p q) ≡ q ∷⁺ (F p)
   -- F-snoc [ x ]⁺ q = refl
-  -- F-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (F-snoc p q)
-  -- G-snoc : {x y z : A} (p : op (TransClosure R) y z) (q : R y x) → G (snoc⁺ p q) ≡ q ∷⁺ G p
+  -- F-snoc (x ∷⁺ p) q = cong (λ p → snoc p x) (F-snoc p q)
+  -- G-snoc : {x y z : A} (p : op (TransClosure R) y z) (q : R y x) → G (snoc p q) ≡ q ∷⁺ G p
   -- G-snoc [ x ]⁺ q = refl
-  -- G-snoc (x ∷⁺ p) q = cong (λ p → snoc⁺ p x) (G-snoc p q)
+  -- G-snoc (x ∷⁺ p) q = cong (λ p → snoc p x) (G-snoc p q)
   -- FG : {x y : A} (p : op (TransClosure R) x y) → F (G p) ≡ p
   -- FG [ x ]⁺ = refl
   -- FG (x ∷⁺ p) = F-snoc (G p) x ∙ cong (λ p → x ∷⁺ p) (FG p)
@@ -93,13 +93,22 @@ module FreeSemicategory where
   onOp : (R : Graph A ℓ₁) → FreeSemicategory (op R) ≡ op (FreeSemicategory R)
   onOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
     where
+    f : {x y : A} → FreeSemicategory (op R) x y → op (FreeSemicategory R) x y
+    f [ a ]⁺ = [ a ]⁺
+    f (p ∷⁺ a) = snoc a (f p)
+    g : {x y : A} → op (FreeSemicategory R) x y → FreeSemicategory (op R) x y
+    g [ a ]⁺ = [ a ]⁺
+    g (p ∷⁺ a) = snoc a (g p)
+    f-snoc : {x y z : A} (a : R y z) (p : FreeSemicategory (op R) y x) → f (snoc a p) ≡ f p ∷⁺ a
+    f-snoc a [ b ]⁺ = refl
+    f-snoc a (p ∷⁺ b) = cong (snoc b) (f-snoc a p)
+    fg : {x y : A} (p : op (FreeSemicategory R) x y) → f (g p) ≡ p
+    fg = {!!}
     e : (x y : A) → Iso (FreeSemicategory (op R) x y) (op (FreeSemicategory R) x y)
-    Iso.fun (e x y) [ a ]⁺ = [ a ]⁺
-    Iso.fun (e x y) (p ∷⁺ a) = {!!}
-    Iso.inv (e x y) [ a ]⁺ = [ a ]⁺
-    Iso.inv (e x y) (p ∷⁺ a) = {!!}
-    Iso.rightInv (e x y) p = {!!}
-    Iso.leftInv (e x y) p = {!!}
+    Iso.fun (e x y) = f
+    Iso.inv (e x y) = g
+    Iso.rightInv (e x y) = fg
+    Iso.leftInv (e x y) = {!!}
 
 module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   open FreeSemicategory

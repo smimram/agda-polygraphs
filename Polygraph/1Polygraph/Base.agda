@@ -128,9 +128,9 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
     where
     ind : (x : Σ₀) (ih : (y : Σ₀) → x ↝+ y → isNZ y) → isNZ x
     ind y ih with dr y
-    ... | no ¬red = y , [] , λ {z} y↝*z → ¬red (dh⁺ y↝*z)
+    ... | no ¬red = y , [] , λ {z} y↝*z → ¬red (dh y↝*z)
     ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺
-    ... | z , y'↝z , nz = z , snoc y↝y' y'↝z , nz
+    ... | z , y'↝z , nz = z , FreeCategory.snoc y↝y' y'↝z , nz
 
   rec : {A : Type ℓ₂} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) → ⟦ P ⟧ → A
   rec {f₀ = f₀} f ∣ x ∣ = f₀ x
