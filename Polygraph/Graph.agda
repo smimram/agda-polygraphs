@@ -9,9 +9,11 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.HalfAdjoint
 open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.Equiv.Dependent
+open import Cubical.Foundations.Path
 open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.GroupoidLaws as GL hiding (assoc ; lUnit)
+open import Cubical.Foundations.HLevels
 open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Data.Empty hiding (elim ; rec)
 open import Cubical.Data.Sum hiding (elim ; rec)
@@ -180,6 +182,21 @@ module FreeCategory where
 -- append (x ∷⁺ p) q = x ∷⁺ append p q
 
 ---
+--- The free -1-groupoid (the correct notion of groupoid on a Prop)
+---
+
+module FreePregroupoid where
+
+  infixl 5 _∷+_
+  infixl 5 _∷-_
+
+  --  groupoid closure from the right
+  data FreePregroupoid {X : Type ℓ₀} (_↝_ : Graph X ℓ₁) : Graph X (ℓ-max ℓ₀ ℓ₁) where
+    [] : {x : X} → FreePregroupoid _↝_ x x
+    _∷+_ : {x y z : X} → FreePregroupoid _↝_ x y → y ↝ z → FreePregroupoid _ x z
+    _∷-_ : {x y z : X} → FreePregroupoid _↝_ x y → z ↝ y → FreePregroupoid _ x z
+
+---
 --- The free higher groupoid
 ---
 
@@ -211,12 +228,12 @@ module FreeGroupoid where
       (fr : {y z : X} {p : x ↝! y} (q : A p) (a : y ↝ z) → PathP (λ i → A (invr p a i)) (f∷- (f∷+ q a) a) q)
       (fc : {y z : X} {p : x ↝! y} (q : A p) (a : y ↝ z) → PathP (λ i → PathP (λ j → A (coh p a i j)) (f∷+ (f∷- (f∷+ q a) a) a) (f∷+ q a)) (congP (λ _ q → f∷+ q a) (fr q a)) (fl (f∷+ q a) a)) →
       {y : X} (p : x ↝! y) → A p
-    elim {x = x} A f[] f+∷ f-∷ fl fr fc = e
+    elim {x = x} A f[] f∷+ f∷- fl fr fc = e
       where
       e : {y : X} (p : x ↝! y) → A p
       e [] = f[]
-      e (p ∷+ a) = f+∷ (e p) a
-      e (p ∷- a) = f-∷ (e p) a
+      e (p ∷+ a) = f∷+ (e p) a
+      e (p ∷- a) = f∷- (e p) a
       e (invl p a i) = fl (e p) a i
       e (invr p a i) = fr (e p) a i
       e (coh p a i j) = fc (e p) a i j
@@ -371,3 +388,14 @@ module FreeGroupoid where
         (λ {y} {z} {p} k a → isHAEquivOver.com (snd (fHAEquivOver a)) k)
 
     open ElimEquiv public using (elim≃)
+
+    -- elimination to a Prop
+    elimProp :
+      {x : X}
+      (A : {y : X} → x ↝! y → Type ℓ₂) →
+      (AP : {y : X} (p : x ↝! y) → isProp (A p)) →
+      (f[] : A ([] {x = x}))
+      (f∷+ : {y z : X} {p : x ↝! y} (_ : A p) (a : y ↝ z) → A (p ∷+ a))
+      (f∷- : {y z : X} {p : x ↝! y} (_ : A p) (a : z ↝ y) → A (p ∷- a)) →
+      {y : X} (p : x ↝! y) → A p
+    elimProp {x = x} A AP f[] f∷+ f∷- = elim A f[] f∷+ f∷- (λ _ _ → toPathP (AP _ _ _)) (λ _ _ → toPathP (AP _ _ _)) (λ _ _ → isProp→SquareP (λ _ _ → AP _) _ _ _ _)
