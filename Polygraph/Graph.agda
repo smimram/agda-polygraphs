@@ -408,3 +408,9 @@ module FreeGroupoid where
       (f∷- : {y z : X} {p : x ↝! y} (_ : A p) (a : z ↝ y) → A (p ∷- a)) →
       {y : X} (p : x ↝! y) → A p
     elimProp {x = x} A AP f[] f∷+ f∷- = elim A f[] f∷+ f∷- (λ _ _ → toPathP (AP _ _ _)) (λ _ _ → toPathP (AP _ _ _)) (λ _ _ → isProp→SquareP (λ _ _ → AP _) _ _ _ _)
+
+    module _ where
+      open FreeSemicategory
+      ofSC : {x y : X} → (FreeSemicategory.FreeSemicategory _↝_ x y) → x ↝! y
+      ofSC [ a ]⁺ = [] ∷+ a
+      ofSC (p ∷⁺ a) = ofSC p ∷+ a

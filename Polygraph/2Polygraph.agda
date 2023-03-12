@@ -14,6 +14,7 @@ open import Cubical.Data.Empty as ⊥ hiding (rec ; elim)
 open import Cubical.Relation.Nullary
 open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 
+open import Prelude
 open import Graph
 open Graph.FreeCategory hiding (elim)
 open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
@@ -137,6 +138,25 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     ∣_∣' : ⟦ Σ' ⟧₁ → ⟦_⟧
     ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → cong ∣_∣' ∣ p ∣* ≡ cong ∣_∣' ∣ q ∣*
 
+  ∣_∣*' : {x y : Σ₀} (p : x ↝* y) → ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣'
+  ∣ p ∣*' = cong ∣_∣' ∣ p ∣*
+
+  ∣∣*'comp : {x y z : Σ₀} (p : x ↝* y) (q : y ↝* z) → ∣ p · q ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*'
+  ∣∣*'comp p q =
+    ∣ p · q ∣*' ≡⟨ refl ⟩
+    cong ∣_∣' ∣ p · q ∣* ≡⟨ cong (cong ∣_∣') (mapPathComp ∣_∣₁ p q) ⟩
+    cong ∣_∣' (∣ p ∣* ∙ ∣ q ∣*) ≡⟨ congFunct ∣_∣' _ _ ⟩
+    cong ∣_∣' ∣ p ∣* ∙ cong ∣_∣' ∣ q ∣* ≡⟨ refl ⟩
+    ∣ p ∣*' ∙ ∣ q ∣*' ∎
+
+  ∣∣*'comp₃ : {x y z w : Σ₀} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → ∣ p · q · r ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*' ∙ ∣ r ∣*'
+  ∣∣*'comp₃ p q r = ∣∣*'comp p (q · r) ∙ cong (_∙_ ∣ p ∣*') (∣∣*'comp q r)
+
+  ∣_∣** : {x y : Σ₀} {p q : x ↝* y} (ϕ : p ⇔* q) → ∣ p ∣*' ≡ ∣ q ∣*'
+  ∣ [] ∣** = refl
+  ∣ ϕ ∷ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
+  ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
+
   -- -- I think that this ought to be terminating here (and in fact induction below, is terminating...)
   -- {-# TERMINATING #-}
   -- rec :
@@ -210,8 +230,29 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       NZ : hasNZ Σ'
       NZ = normalize WF DR
 
+      NF : Σ₀ → Σ₀
+      NF x = NZ x .fst
+
+      NFisNF : (x : Σ₀) → isNF (NF x)
+      NFisNF x = NZ x .snd .snd
+
+      -- morphism to the normal form
+      NFmor : (x : Σ₀) → x ↝* NF x
+      NFmor x = NZ x .snd .fst
+
+      NFpath : (x : Σ₀) → ∣ x ∣ ≡ ∣ NF x ∣
+      NFpath x = ∣ NFmor x ∣*
+
+      NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
+      NFindep p = {!elimProp!}
+
       NHB : hasNHB
       NHB = CNHB S₀ C
+
+      -- NHB' : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → {!!}
+      -- NHB' nf p q = {!!}
+
+      -- NZ : 
 
   -- HB : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
   -- HB is wf dr lc {x} {y} p q = {!!}

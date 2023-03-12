@@ -146,13 +146,19 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   eta : (A : ⟦ P ⟧ → Type ℓ₃) (f : (x : ⟦ P ⟧) → A x) → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) ≡ f
   eta A f = funExt (elim (λ n → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) n ≡ f n) (λ x → refl) (λ {x} {y} a i → refl))
 
-  ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
-  ∣ [] ∣* = refl
-  ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ a ∣₁
-
+  -- mapping a function to paths to the elements of the list
   _* : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} → x ↝* y → f₀ x ≡ f₀ y
   (f *) [] = refl
   (f *) (p ∷ a) = (f *) p ∙ f a
+
+  ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
+  ∣_∣* = ∣_∣₁ *
+  -- ∣ [] ∣* = refl
+  -- ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ a ∣₁
+
+  mapPathComp : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y z : Σ₀} (p : x ↝* y) (q : y ↝* z) → (f *) (p · q) ≡ (f *) p ∙ (f *) q
+  mapPathComp f p [] = rUnit _
+  mapPathComp f p (q ∷ x) = cong (_∙ f x) (mapPathComp f p q) ∙ sym (GL.assoc _ _ _)
 
   -- dependent version
   *P : (A : ⟦ P ⟧ → Type ℓ₃) {f₀ : (x : Σ₀) → A ∣ x ∣} (f : {x y : Σ₀} (α : x ↝ y) → PathP (λ i → A (∣ α ∣₁ i)) (f₀ x) (f₀ y)) {x y : Σ₀} (p : x ↝* y) → PathP (λ i → A (∣ p ∣* i)) (f₀ x) (f₀ y)
