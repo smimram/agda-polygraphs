@@ -3,12 +3,15 @@
 module 1Polygraph.Rewriting where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Path
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Empty
 open import Cubical.Data.Sigma
 
 open import Graph
 open import 1Polygraph.Base
+open import 1Polygraph.PathElimination
 
 private variable
   ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
@@ -100,6 +103,3 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
     ... | no ¬red = y , [] , λ {z} y↝*z → ¬red (dh y↝*z)
     ... | yes (y' , y↝y') with ih y' [ y↝y' ]⁺
     ... | z , y'↝z , nz = z , FreeCategory.snoc y↝y' y'↝z , nz
-
-  NFunique : (NZ : hasNZ P) {x y : Σ₀} → ∣ x ∣ ≡ ∣ y ∣ → NZ x .fst ≡ NZ y .fst
-  NFunique NZ p = {!elimPath!}

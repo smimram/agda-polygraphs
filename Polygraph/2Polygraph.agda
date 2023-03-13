@@ -6,8 +6,9 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.GroupoidLaws as GL
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Univalence
 open import Cubical.Data.Sum hiding (rec ; elim)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Empty as ⊥ hiding (rec ; elim)
@@ -102,22 +103,18 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   -- homotopy basis with normal targets
   hasNHB = {x y : Σ₀} → isNF {P = Σ'} y → (p q : x ↝* y) → p ⇔* q
 
-  -- homotopy basis
-  hasHB = {x y : Σ₀} → (p q : x ↝* y) → p ⇔* q
-
   -- confluence implies homotopy basis with normal targets
   CNHB : isSet Σ₀ → hasC → hasNHB
-  CNHB = {!!}
-  -- CNHB is confl ny p q with confl p q
-  -- ... | z , a ∷ y↝z , y↝z' , p⇔q = ⊥.rec (ny (rt→t a y↝z))
-  -- ... | z , [] , y↝z' , p⇔q with ∷-destruct y↝z'
-  -- ... | inl (z≡z , y↝z'≡[]) = [≡ sym (·-unitr p) ] · p⇔q · [≡ cong (λ p → q · p) lem' ∙ ·-unitr q ]
-    -- where
-    -- lem : z≡z ≡ refl
-    -- lem = is z z z≡z refl
-    -- lem' : y↝z' ≡ []
-    -- lem' = subst (λ p → PathP (λ i → p i ↝* z) y↝z' []) lem y↝z'≡[]
-  -- ... | inr (_ , a , r , y↝z'≡a∷r) = ⊥.rec (ny (rt→t a r))
+  CNHB S C ny p q with C p q
+  ... | z , p' ∷ a , q' , p⇔q = ⊥.rec (ny (toSC p' a))
+  ... | z , [] , q' , p⇔q with ∷-destruct q'
+  ... | inr (_ , q'' , a , _) = ⊥.rec (ny (toSC q'' a))
+  ... | inl (pq , q'≡[]) = p⇔q · [≡ cong (λ q' → q · q') lem' ]
+    where
+    lem : pq ≡ refl
+    lem = S _ _ pq refl
+    lem' : q' ≡ []
+    lem' = sym (substRefl {B = λ x → x ↝* z} q') ∙ transport (λ i → subst (λ x → x ↝* z) (lem i) q' ≡ []) q'≡[]
 
   -- data ∥_∥ : Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
     -- ∣_∣ : ∥_∥' → ∥_∥
@@ -156,6 +153,9 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣ [] ∣** = refl
   ∣ ϕ ∷ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
   ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
+
+  -- homotopy basis
+  hasHB = {x y : Σ₀} → (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
 
   -- -- I think that this ought to be terminating here (and in fact induction below, is terminating...)
   -- {-# TERMINATING #-}
@@ -243,25 +243,29 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       NFpath : (x : Σ₀) → ∣ x ∣ ≡ ∣ NF x ∣
       NFpath x = ∣ NFmor x ∣*
 
-      NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
-      NFindep p = {!elimProp!}
+      -- NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
+      -- NFindep p = {!ua ?!}
 
       NHB : hasNHB
       NHB = CNHB S₀ C
 
-      -- NHB' : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → {!!}
-      -- NHB' nf p q = {!!}
-
-      -- NZ : 
-
-  -- HB : isSet Σ₀ → isWF Σ' → hasDR Σ' → hasLC → hasHB
-  -- HB is wf dr lc {x} {y} p q = {!!}
-    -- where
-    -- z : Σ₀
-    -- z = NZ y .fst
-    -- nz : isNF z
-    -- nz = NZ y .snd .snd
-    -- r : y ↝* z
-    -- r = NZ y .snd .fst
-    -- ϕ : p · r ⇔* q · r
-    -- ϕ = NHB nz (p · r) (q · r)
+    HB : hasHB
+    HB {x} {y} p q =
+      ∣ p ∣*' ≡⟨ rUnit _ ⟩
+      ∣ p ∣*' ∙ refl ≡⟨ cong (_∙_ ∣ p ∣*') (sym (rCancel _)) ⟩
+      ∣ p ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*' ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ p ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (sym (∣∣*'comp p r)) ⟩
+      ∣ p · r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') ∣ ϕ ∣** ⟩
+      ∣ q · r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (∣∣*'comp q r) ⟩
+      (∣ q ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
+      ∣ q ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙_ ∣ q ∣*') (rCancel _) ⟩
+      ∣ q ∣*' ∙ refl ≡⟨ sym (rUnit _) ⟩
+      ∣ q ∣*' ∎
+      where
+      z : Σ₀
+      z = NF y
+      r : y ↝* z
+      r = NZ y .snd .fst
+      ϕ : p · r ⇔* q · r
+      ϕ = NHB (NFisNF y) (p · r) (q · r)
+      

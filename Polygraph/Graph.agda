@@ -64,32 +64,6 @@ module FreeSemicategory where
     dh [ a ]⁺ = _ , a
     dh (p ∷⁺ a) = dh p
 
--- snoc : {a b c : A} → TransClosure R a b → R b c → TransClosure R a c
--- snoc [ x ]⁺ y = x ∷⁺ [ y ]⁺
--- snoc (x ∷⁺ p) y = x ∷⁺ snoc p y
-
--- transOp : (R : Graph A ℓ₁) → TransClosure (op R) ≡ op (TransClosure R)
--- transOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (iso F G FG GF))
-  -- where
-  -- F  : {x y : A} → TransClosure (op R) x y → op (TransClosure R) x y
-  -- F [ x ]⁺ = [ x ]⁺
-  -- F (x ∷⁺ p) = snoc (F p) x
-  -- G : {x y : A} → op (TransClosure R) x y → TransClosure (op R) x y
-  -- G [ x ]⁺ = [ x ]⁺
-  -- G (x ∷⁺ p) = snoc (G p) x
-  -- F-snoc : {x y z : A} (p : TransClosure (op R) x y) (q : R z y) → F (snoc p q) ≡ q ∷⁺ (F p)
-  -- F-snoc [ x ]⁺ q = refl
-  -- F-snoc (x ∷⁺ p) q = cong (λ p → snoc p x) (F-snoc p q)
-  -- G-snoc : {x y z : A} (p : op (TransClosure R) y z) (q : R y x) → G (snoc p q) ≡ q ∷⁺ G p
-  -- G-snoc [ x ]⁺ q = refl
-  -- G-snoc (x ∷⁺ p) q = cong (λ p → snoc p x) (G-snoc p q)
-  -- FG : {x y : A} (p : op (TransClosure R) x y) → F (G p) ≡ p
-  -- FG [ x ]⁺ = refl
-  -- FG (x ∷⁺ p) = F-snoc (G p) x ∙ cong (λ p → x ∷⁺ p) (FG p)
-  -- GF : {x y : A} (p : TransClosure (op R) x y) → G (F p) ≡ p
-  -- GF [ x ]⁺ = refl
-  -- GF (x ∷⁺ p) = G-snoc (F p) x ∙ cong (λ p → x ∷⁺ p) (GF p)
-
   onOp : (R : Graph A ℓ₁) → FreeSemicategory (op R) ≡ op (FreeSemicategory R)
   onOp {A = A} R = funExt λ x → funExt λ y → ua (isoToEquiv (e x y))
     where
@@ -132,9 +106,9 @@ module FreeCategory where
     _∷_ : {x y z : A} → FreeCategory R x y → R y z → FreeCategory R x z
 
   module _ {_↝_ : Graph A ℓ₁} where
-
     private
       _↝*_ = FreeCategory _↝_
+      _↝+_ = FreeSemicategory.FreeSemicategory _↝_
 
     elim :
       (P : {x y : A} → x ↝* y → Type ℓ₂) →
@@ -155,9 +129,9 @@ module FreeCategory where
     snoc a [] = [] ∷ a
     snoc a (p ∷ b) = (snoc a p) ∷ b
 
--- ∷-destruct : {a c : A} (q : TransReflClosure R a c) → (Σ (a ≡ c) (λ p → PathP (λ i → TransReflClosure R (p i) c) q [])) ⊎ Σ A (λ b → Σ (R a b) λ x → Σ (TransReflClosure R b c) λ p → q ≡ x ∷ p)
--- ∷-destruct [] = inl (refl , refl)
--- ∷-destruct (x ∷ q) = inr (_ , x , q , refl)
+    ∷-destruct : {x z : A} (q : x ↝* z) → (Σ (x ≡ z) λ p → subst (λ x → x ↝* z) p q ≡ []) ⊎ Σ A (λ y → Σ (x ↝* y) λ p → Σ (y ↝ z) λ a → q ≡ p ∷ a)
+    ∷-destruct {z = z} [] = inl (refl , substRefl {B = λ x → x ↝* z} [])
+    ∷-destruct (q ∷ a) = inr (_ , q , a , refl)
 
     [_] : {x y : A} → x ↝ y → x ↝* y
     [ a ] = [] ∷ a
@@ -177,6 +151,12 @@ module FreeCategory where
     lUnit : {x y : A} (p : x ↝* y) → p ≡ [] · p
     lUnit [] = refl
     lUnit (p ∷ a) = cong (λ p → p ∷ a) (lUnit p)
+
+    toSC : {x y z : A} (p : x ↝* y) (a : y ↝ z) → x ↝+ z
+    toSC [] a = [ a ]⁺
+      where open FreeSemicategory
+    toSC (p ∷ b) a = toSC p b ∷⁺ a
+      where open FreeSemicategory
 
 -- t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
 -- t→rt [ x ]⁺ = x ∷ []
