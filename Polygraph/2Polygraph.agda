@@ -17,7 +17,7 @@ open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 
 open import Prelude
 open import Graph
-open Graph.FreeCategory hiding (elim)
+open Graph.FreeCategory hiding (elim ; rec)
 open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
 
 private variable
@@ -154,58 +154,11 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣ ϕ ∷ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
   ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
 
-  -- homotopy basis
+  ---
+  --- homotopy basis
+  ---
+
   hasHB = {x y : Σ₀} → (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
-
-  -- -- I think that this ought to be terminating here (and in fact induction below, is terminating...)
-  -- {-# TERMINATING #-}
-  -- rec :
-    -- {A : Type ℓ₃} →
-    -- {f₀ : Σ₀ → A}
-    -- (f₁ : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y)
-    -- (f₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → (f₁ *) p ≡ (f₁ *) q) →
-    -- ⟦_⟧ → A
-  -- rec f₁ f₂ ∣ x ∣' = 1Pol.rec Σ' f₁ x
-  -- rec f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
-    -- where
-    -- lem' : {x y : Σ₀} (p : x ↝* y) → cong (rec f₁ f₂) (cong ∣_∣' ∣ p ∣*) ≡ (f₁ *) p
-    -- lem' [] = refl
-    -- lem' (a ∷ p) =
-      -- cong (rec f₁ f₂) (cong ∣_∣' (∣ a ∣₁ ∙ ∣ p ∣*))                        ≡⟨ refl ⟩
-      -- cong (rec f₁ f₂ ∘ ∣_∣') (∣ a ∣₁ ∙ ∣ p ∣*)                             ≡⟨ congFunct (rec f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ∣ p ∣* ⟩
-      -- cong (rec f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ∙ cong (rec f₁ f₂ ∘ ∣_∣') ∣ p ∣*       ≡⟨ cong (λ p → cong (rec f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ∙ p) (lem' p) ⟩
-      -- cong (rec f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ∙ (f₁ *) p                             ≡⟨ refl ⟩
-      -- cong (1Pol.rec Σ' f₁) ∣ a ∣₁ ∙ (f₁ *) p                         ≡⟨ refl ⟩
-      -- f₁ a ∙ (f₁ *) p                                                       ∎
-    -- lem : cong (rec f₁ f₂) (cong ∣_∣' ∣ p ∣*) ≡ cong (rec f₁ f₂) (cong ∣_∣' ∣ q ∣*)
-    -- lem = lem' p ∙ f₂ α ∙ sym (lem' q)
-
-  congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z)
-                   → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
-  congFunct-dep' {A = A} {B = B} f p q = sym (fromPathP (congFunct-dep f p q)) ∙ fromPathP (compPathP'-filler {B = B} {p = p} {q = q} (cong f p) (cong f q))
-
-  -- the induction principle
-  elim :
-    {ℓ₂ : Level}
-    (A : ⟦_⟧ → Type ℓ₂) →
-    (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
-    (f₁ : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A ∣ ∣ a ∣₁ i ∣') (f₀ x) (f₀ y))
-    (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (*P (A ∘ ∣_∣') f₁ p) (*P (A ∘ ∣_∣') f₁ q))
-    (x : ⟦_⟧) → A x
-  elim A f₀ f₁ f₂ ∣ x ∣' = 1Polygraph.elim (A ∘ ∣_∣') f₀ f₁ x
-  elim A f₀ f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
-    where
-    lem' : {x y : Σ₀} (p : x ↝* y) → cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ≡ *P (A ∘ ∣_∣') f₁ p
-    lem' [] = refl
-    lem' (p ∷ a) =
-      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∷ a ∣* ≡⟨ refl ⟩
-      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct-dep' (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ∣ a ∣₁ ⟩
-      compPathP' {B = A ∘ ∣_∣'} (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ cong (λ p → compPathP' {B = A ∘ ∣_∣'} p (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁)) (lem' p) ⟩
-      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ refl ⟩
-      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (f₁ a) ≡⟨ refl ⟩
-      *P (A ∘ ∣_∣') f₁ (p ∷ a) ∎
-    lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
-    lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
 
   -- local confluence implies coherence
   module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
@@ -237,16 +190,16 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
     HB : hasHB
     HB {x} {y} p q =
-      ∣ p ∣*' ≡⟨ rUnit _ ⟩
-      ∣ p ∣*' ∙ refl ≡⟨ cong (_∙_ ∣ p ∣*') (sym (rCancel _)) ⟩
-      ∣ p ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*' ≡⟨ GL.assoc _ _ _ ⟩
+      ∣ p ∣*'                           ≡⟨ rUnit _ ⟩
+      ∣ p ∣*' ∙ refl                    ≡⟨ cong (_∙_ ∣ p ∣*') (sym (rCancel _)) ⟩
+      ∣ p ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ GL.assoc _ _ _ ⟩
       (∣ p ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (sym (∣∣*'comp p r)) ⟩
-      ∣ p · r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') ∣ ϕ ∣** ⟩
-      ∣ q · r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (∣∣*'comp q r) ⟩
+      ∣ p · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') ∣ ϕ ∣** ⟩
+      ∣ q · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') (∣∣*'comp q r) ⟩
       (∣ q ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
-      ∣ q ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*' ≡⟨ cong (_∙_ ∣ q ∣*') (rCancel _) ⟩
-      ∣ q ∣*' ∙ refl ≡⟨ sym (rUnit _) ⟩
-      ∣ q ∣*' ∎
+      ∣ q ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ cong (_∙_ ∣ q ∣*') (rCancel _) ⟩
+      ∣ q ∣*' ∙ refl                    ≡⟨ sym (rUnit _) ⟩
+      ∣ q ∣*'                           ∎
       where
       z : Σ₀
       z = NF y
@@ -254,6 +207,68 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       r = NZ y .snd .fst
       ϕ : p · r ⇔* q · r
       ϕ = NHB (NFisNF y) (p · r) (q · r)
-      
 
-    elimPathSet : (A : Type ℓ)
+  ---
+  --- elimination
+  ---
+
+  congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z)
+                   → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
+  congFunct-dep' {A = A} {B = B} f p q = sym (fromPathP (congFunct-dep f p q)) ∙ fromPathP (compPathP'-filler {B = B} {p = p} {q = q} (cong f p) (cong f q))
+
+  -- the induction principle
+  elim :
+    {ℓ₂ : Level}
+    (A : ⟦_⟧ → Type ℓ₂)
+    (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
+    (f₁ : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A ∣ ∣ a ∣₁ i ∣') (f₀ x) (f₀ y))
+    (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (*P (A ∘ ∣_∣') f₁ p) (*P (A ∘ ∣_∣') f₁ q))
+    (x : ⟦_⟧) → A x
+  elim A f₀ f₁ f₂ ∣ x ∣' = 1Polygraph.elim (A ∘ ∣_∣') f₀ f₁ x
+  elim A f₀ f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
+    where
+    lem' : {x y : Σ₀} (p : x ↝* y) → cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ≡ *P (A ∘ ∣_∣') f₁ p
+    lem' [] = refl
+    lem' (p ∷ a) =
+      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∷ a ∣* ≡⟨ refl ⟩
+      cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct-dep' (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣* ∣ a ∣₁ ⟩
+      compPathP' {B = A ∘ ∣_∣'} (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ cong (λ p → compPathP' {B = A ∘ ∣_∣'} p (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁)) (lem' p) ⟩
+      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ a ∣₁) ≡⟨ refl ⟩
+      compPathP' {B = A ∘ ∣_∣'} (*P (A ∘ ∣_∣') f₁ p) (f₁ a) ≡⟨ refl ⟩
+      *P (A ∘ ∣_∣') f₁ (p ∷ a) ∎
+    lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
+    lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
+
+  -- rec :
+    -- {ℓ₂ : Level}
+    -- {A : Type ℓ₂}
+    -- (f₀ : (x : Σ₀) → A)
+    -- (f₁ : {x y : Σ₀} (a : x ↝ y) → f₀ x ≡ f₀ y)
+    -- (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → ((f₁ *) p) ≡ ((f₁ *) q))
+    -- (x : ⟦_⟧) → A
+  -- rec {A = A} f₀ f₁ f₂ = elim (λ _ → A) f₀ f₁ test
+    -- where
+    -- test : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → PathP (λ i → f₀ x ≡ f₀ y) (*P (λ _ → A) f₁ p) (*P (λ _ → A) f₁ q)
+    -- test α = {!!}
+
+  -- I think that this ought to be terminating here
+  {-# TERMINATING #-}
+  rec :
+    {A : Type ℓ₃} →
+    (f₀ : Σ₀ → A)
+    (f₁ : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y)
+    (f₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → (f₁ *) p ≡ (f₁ *) q) →
+    ⟦_⟧ → A
+  rec f₀ f₁ f₂ ∣ x ∣' = 1Polygraph.rec f₁ x
+  rec f₀ f₁ f₂ (∣_∣₂ {x} {y} {p} {q} α i j) = lem i j
+    where
+    lem' : {x y : Σ₀} (p : x ↝* y) → cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ (f₁ *) p
+    lem' [] = refl
+    lem' (p ∷ a) =
+      cong (rec f₀ f₁ f₂) ∣ p ∷ a ∣*' ≡⟨ refl ⟩
+      cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∷ a ∣* ≡⟨ refl ⟩
+      cong (rec f₀ f₁ f₂ ∘ ∣_∣') (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∣* ∣ a ∣₁ ⟩
+      cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∣* ∙ cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ≡⟨ cong (_∙ (cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ a ∣₁)) (lem' p) ⟩
+      (f₁ *) p ∙ f₁ a ∎
+    lem : cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ cong (rec f₀ f₁ f₂) ∣ q ∣*'
+    lem = lem' p ∙ f₂ α ∙ sym (lem' q)

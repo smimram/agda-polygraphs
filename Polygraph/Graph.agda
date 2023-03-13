@@ -105,7 +105,7 @@ module FreeCategory where
     [] : {x : A} → FreeCategory R x x
     _∷_ : {x y z : A} → FreeCategory R x y → R y z → FreeCategory R x z
 
-  module _ {_↝_ : Graph A ℓ₁} where
+  module _ {A : Type ℓ₀} {_↝_ : Graph A ℓ₁} where
     private
       _↝*_ = FreeCategory _↝_
       _↝+_ = FreeSemicategory.FreeSemicategory _↝_
@@ -158,22 +158,21 @@ module FreeCategory where
     toSC (p ∷ b) a = toSC p b ∷⁺ a
       where open FreeSemicategory
 
-    -- data isEmpty : {x y : A} → x ↝* y → Type ℓ₀ where
-      -- empty[] : {x : A} → isEmpty {x} {x} []
+    data isEmpty : {x y : A} → x ↝* y → Type (ℓ-max ℓ₀ ℓ₁) where
+      empty[] : {x : A} → isEmpty {x} {x} []
 
-    
-
--- t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
--- t→rt [ x ]⁺ = x ∷ []
--- t→rt (x ∷⁺ p) = {!x ∷ (t→rt p)!}
-
--- rt→t : {a b c : A} → R a b → TransReflClosure R b c → TransClosure R a c
--- rt→t a<b [] = [ a<b ]⁺
--- rt→t a<b (b<b' ∷ b'<*c) = a<b ∷⁺ rt→t b<b' b'<*c
-
--- append : {a b c : A} → TransClosure R a b → TransReflClosure R b c → TransClosure R a c
--- append [ x ]⁺ q = rt→t x q
--- append (x ∷⁺ p) q = x ∷⁺ append p q
+    -- emptyPath : {x y : A} → Σ (x ↝* y) isEmpty ≃ (x ≡ y)
+    -- emptyPath {x} {y} = isoToEquiv e
+      -- where
+      -- f : {y : A} → Σ (x ↝* y) isEmpty → x ≡ y
+      -- f (.[] , empty[]) = refl
+      -- g : {y : A} → x ≡ y → Σ (x ↝* y) isEmpty
+      -- g = J (λ y p → Σ (x ↝* y) isEmpty) ([] , empty[])
+      -- e : Iso (Σ (x ↝* y) isEmpty) (x ≡ y)
+      -- Iso.fun e = f
+      -- Iso.inv e = g
+      -- Iso.rightInv e p = J (λ y p → f (g p) ≡ p) {!!} p
+      -- Iso.leftInv e = {!!}
 
 ---
 --- The free -1-groupoid (the correct notion of groupoid on a Prop)
