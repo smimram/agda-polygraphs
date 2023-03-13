@@ -155,60 +155,6 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
 
   ---
-  --- homotopy basis
-  ---
-
-  hasHB = {x y : Σ₀} → (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
-
-  -- local confluence implies coherence
-  module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
-    private
-      C : hasC
-      C = newman WF LC
-
-      NZ : hasNZ Σ'
-      NZ = normalize WF DR
-
-      NF : Σ₀ → Σ₀
-      NF x = NZ x .fst
-
-      NFisNF : (x : Σ₀) → isNF (NF x)
-      NFisNF x = NZ x .snd .snd
-
-      -- morphism to the normal form
-      NFmor : (x : Σ₀) → x ↝* NF x
-      NFmor x = NZ x .snd .fst
-
-      NFpath : (x : Σ₀) → ∣ x ∣ ≡ ∣ NF x ∣
-      NFpath x = ∣ NFmor x ∣*
-
-      -- NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
-      -- NFindep p = {!ua ?!}
-
-      NHB : hasNHB
-      NHB = CNHB S₀ C
-
-    HB : hasHB
-    HB {x} {y} p q =
-      ∣ p ∣*'                           ≡⟨ rUnit _ ⟩
-      ∣ p ∣*' ∙ refl                    ≡⟨ cong (_∙_ ∣ p ∣*') (sym (rCancel _)) ⟩
-      ∣ p ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ GL.assoc _ _ _ ⟩
-      (∣ p ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (sym (∣∣*'comp p r)) ⟩
-      ∣ p · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') ∣ ϕ ∣** ⟩
-      ∣ q · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') (∣∣*'comp q r) ⟩
-      (∣ q ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
-      ∣ q ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ cong (_∙_ ∣ q ∣*') (rCancel _) ⟩
-      ∣ q ∣*' ∙ refl                    ≡⟨ sym (rUnit _) ⟩
-      ∣ q ∣*'                           ∎
-      where
-      z : Σ₀
-      z = NF y
-      r : y ↝* z
-      r = NZ y .snd .fst
-      ϕ : p · r ⇔* q · r
-      ϕ = NHB (NFisNF y) (p · r) (q · r)
-
-  ---
   --- elimination
   ---
 
@@ -272,3 +218,61 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       (f₁ *) p ∙ f₁ a ∎
     lem : cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ cong (rec f₀ f₁ f₂) ∣ q ∣*'
     lem = lem' p ∙ f₂ α ∙ sym (lem' q)
+
+  ---
+  --- homotopy basis
+  ---
+
+  hasHB = {x y : Σ₀} → (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
+
+  -- local confluence implies coherence
+  module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
+    private
+      C : hasC
+      C = newman WF LC
+
+      NZ : hasNZ Σ'
+      NZ = normalize WF DR
+
+      NF : Σ₀ → Σ₀
+      NF x = NZ x .fst
+
+      NFisNF : (x : Σ₀) → isNF (NF x)
+      NFisNF x = NZ x .snd .snd
+
+      -- morphism to the normal form
+      NFmor : (x : Σ₀) → x ↝* NF x
+      NFmor x = NZ x .snd .fst
+
+      NFpath : (x : Σ₀) → ∣ x ∣ ≡ ∣ NF x ∣
+      NFpath x = ∣ NFmor x ∣*
+
+      -- NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
+      -- NFindep p = {!ua ?!}
+
+      NHB : hasNHB
+      NHB = CNHB S₀ C
+
+    HB : hasHB
+    HB {x} {y} p q =
+      ∣ p ∣*'                           ≡⟨ rUnit _ ⟩
+      ∣ p ∣*' ∙ refl                    ≡⟨ cong (_∙_ ∣ p ∣*') (sym (rCancel _)) ⟩
+      ∣ p ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ p ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ cong (_∙ sym ∣ r ∣*') (sym (∣∣*'comp p r)) ⟩
+      ∣ p · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') ∣ ϕ ∣** ⟩
+      ∣ q · r ∣*' ∙ sym ∣ r ∣*'         ≡⟨ cong (_∙ sym ∣ r ∣*') (∣∣*'comp q r) ⟩
+      (∣ q ∣*' ∙ ∣ r ∣*') ∙ sym ∣ r ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
+      ∣ q ∣*' ∙ ∣ r ∣*' ∙ sym ∣ r ∣*'   ≡⟨ cong (_∙_ ∣ q ∣*') (rCancel _) ⟩
+      ∣ q ∣*' ∙ refl                    ≡⟨ sym (rUnit _) ⟩
+      ∣ q ∣*'                           ∎
+      where
+      z : Σ₀
+      z = NF y
+      r : y ↝* z
+      r = NZ y .snd .fst
+      ϕ : p · r ⇔* q · r
+      ϕ = NHB (NFisNF y) (p · r) (q · r)
+
+    pathHB :  {x y : Σ₀} → (p q : ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣') → ∣ p ∣ ≡ ∣ q ∣
+    pathHB p q = {!elimPath ? ? ? p!}
+
