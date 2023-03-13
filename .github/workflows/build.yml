@@ -31,7 +31,7 @@ jobs:
       with:
         path: |
           ~/.agda
-          ~/cubical
+          cubical
         key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}
     - name: Install cabal
       if: steps.cache-cabal.outputs.cache-hit != 'true'
