@@ -182,21 +182,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   congFunct-dep' : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} {x y z : A} (f : (a : A) → B a) (p : x ≡ y) (q : y ≡ z)
                    → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)
-  congFunct-dep' {A = A} {B = B} f p q = J (λ y p → {z : A} (q : y ≡ z) → cong f (p ∙ q) ≡ compPathP' {B = B} (cong f p) (cong f q)) lem p q
-    where
-    lem : {y z : A} (q : y ≡ z) → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)
-    -- lem {y} {z} q =
-      -- cong f (refl ∙ q) ≡⟨ {!!} ⟩
-      -- subst (λ p → PathP (λ i → B (p i)) (f y) (f z)) (lUnit q) (cong f q) ≡⟨ {!!} ⟩
-      -- compPathP' {B = B} refl (cong f q) ≡⟨ refl ⟩
-      -- compPathP' {B = B} (cong f refl) (cong f q) ∎
-    lem = J (λ z q → cong f (refl ∙ q) ≡ compPathP' {B = B} (cong f refl) (cong f q)) lem'
-      where
-      lem' : cong f (refl ∙ refl) ≡ compPathP' {B = B} (cong f refl) (cong f refl)
-      lem' =
-        cong f (refl ∙ refl) ≡⟨ {!!} ⟩
-        compPathP' {B = B} refl refl ≡⟨ refl ⟩
-        compPathP' {B = B} (cong f refl) (cong f refl) ∎
+  congFunct-dep' {A = A} {B = B} f p q = sym (fromPathP (congFunct-dep f p q)) ∙ fromPathP (compPathP'-filler {B = B} {p = p} {q = q} (cong f p) (cong f q))
 
   -- the induction principle
   elim :
@@ -269,3 +255,5 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       ϕ : p · r ⇔* q · r
       ϕ = NHB (NFisNF y) (p · r) (q · r)
       
+
+    elimPathSet : (A : Type ℓ)

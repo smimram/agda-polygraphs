@@ -84,7 +84,7 @@ module FreeSemicategory where
     Iso.rightInv (e x y) = fg
     Iso.leftInv (e x y) = {!!}
 
-module _ {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
+module _ {ℓ₀ : Level} {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   open FreeSemicategory
 
   _<⁺_ = FreeSemicategory _<_
@@ -157,6 +157,11 @@ module FreeCategory where
       where open FreeSemicategory
     toSC (p ∷ b) a = toSC p b ∷⁺ a
       where open FreeSemicategory
+
+    -- data isEmpty : {x y : A} → x ↝* y → Type ℓ₀ where
+      -- empty[] : {x : A} → isEmpty {x} {x} []
+
+    
 
 -- t→rt : {a b : A} → TransClosure R a b → TransReflClosure R a b
 -- t→rt [ x ]⁺ = x ∷ []
