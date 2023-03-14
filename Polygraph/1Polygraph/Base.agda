@@ -64,6 +64,9 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   elim A f₀ f ∣ x ∣ = f₀ x
   elim A f₀ f (∣ a ∣₁ i) = f a i
 
+  elimProp : (A : ⟦ P ⟧ → Type ℓ₃) → ((x : ⟦ P ⟧) → isProp (A x)) → (f₀ : (x : Σ₀) → A ∣ x ∣) → (x : ⟦ P ⟧) → A x
+  elimProp A PA f₀ = elim A f₀ λ a → toPathP (PA _ _ _)
+
   eta : (A : ⟦ P ⟧ → Type ℓ₃) (f : (x : ⟦ P ⟧) → A x) → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) ≡ f
   eta A f = funExt (elim (λ n → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) n ≡ f n) (λ x → refl) (λ {x} {y} a i → refl))
 

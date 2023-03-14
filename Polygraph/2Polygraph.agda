@@ -141,6 +141,9 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣_∣*' : {x y : Σ₀} (p : x ↝* y) → ∣ x ∣'' ≡ ∣ y ∣''
   ∣ p ∣*' = cong ∣_∣' ∣ p ∣*
 
+  ∣_∣?' : {x y : Σ₀} (p : x ↝? y) → ∣ x ∣'' ≡ ∣ y ∣''
+  ∣ p ∣?' = cong ∣_∣' ∣ p ∣?
+
   ∣∣*'comp : {x y z : Σ₀} (p : x ↝* y) (q : y ↝* z) → ∣ p · q ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*'
   ∣∣*'comp p q =
     ∣ p · q ∣*' ≡⟨ refl ⟩
@@ -243,7 +246,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   --- homotopy basis
   ---
 
-  hasHB = {x y : Σ₀} → (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
+  hasHB = {x y : Σ₀} (p q : x ↝* y) → ∣ p ∣*' ≡ ∣ q ∣*'
 
   -- local confluence implies coherence
   module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
@@ -260,12 +263,16 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       NFisNF : (x : Σ₀) → isNF (NF x)
       NFisNF x = NZ x .snd .snd
 
+      NFisNF' : (x : Σ₀) → isNF' (NF x)
+      NFisNF' x = isNF→isNF' (NF x) (NFisNF x)
+
       -- morphism to the normal form
       NFmor : (x : Σ₀) → x ↝* NF x
       NFmor x = NZ x .snd .fst
 
-      NFpath : (x : Σ₀) → ∣ x ∣ ≡ ∣ NF x ∣
-      NFpath x = ∣ NFmor x ∣*
+      -- TODO: do we use this in the end?
+      NFpath : (x : Σ₀) → ∣ x ∣'' ≡ ∣ NF x ∣''
+      NFpath x = ∣ NFmor x ∣*'
 
       -- NFindep : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → NF x ≡ NF y
       -- NFindep p = {!ua ?!}
@@ -293,6 +300,60 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       ϕ : p · r ⇔* q · r
       ϕ = NHB (NFisNF y) (p · r) (q · r)
 
-    pathHB :  {x y : Σ₀} → (p q : ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣') → ∣ p ∣ ≡ ∣ q ∣
-    pathHB p q = {!elimPath ? ? ? p!}
+    -- Church-Rosser
+    CR : {x y : Σ₀} (p : x ↝? y) → Σ (NF x ↝* NF y) (λ n → ∣ NFmor x ∣*' ∙ ∣ n ∣*' ≡ ∣ p ∣?' ∙ ∣ NFmor y ∣*')
+    CR [] =  [] , sym (GL.rUnit _) ∙ GL.lUnit _
+    CR (_∷+_ {x} {y} {z} p a)= n · n' , (
+      ∣ NFmor x ∣*' ∙ ∣ n · n' ∣*' ≡⟨ {!!} ⟩
+      ∣ NFmor x ∣*' ∙ ∣ n ∣*' ∙ ∣ n' ∣*' ≡⟨ {!!} ⟩
+      ∣ p ∷+ a ∣?' ∙ ∣ NFmor z ∣*' ∎)
+
+
+
+-- n ∙ n' , (
+      -- NFpath x ∙ cong ∣_∣'' (n ∙ n') ≡⟨ cong (_∙_ (NFpath x)) (congFunct ∣_∣'' n n') ⟩
+      -- NFpath x ∙ cong ∣_∣'' n ∙ cong ∣_∣'' n' ≡⟨ GL.assoc _ _ _ ⟩
+      -- (NFpath x ∙ cong ∣_∣'' n) ∙ cong ∣_∣'' n' ≡⟨ cong (_∙ (cong ∣_∣'' n')) c ⟩
+      -- (∣ p ∣?' ∙ NFpath y) ∙ cong ∣_∣'' n' ≡⟨ sym (GL.assoc _ _ _) ⟩
+      -- ∣ p ∣?' ∙ (NFpath y ∙ cong ∣_∣'' n') ≡⟨ cong (_∙_ ∣ p ∣?') c' ⟩
+      -- ∣ p ∣?' ∙ (cong ∣_∣' ∣ a ∣₁ ∙ NFpath z) ≡⟨ GL.assoc _ _ _ ⟩
+      -- (∣ p ∣?' ∙ cong ∣_∣' ∣ a ∣₁) ∙ NFpath z ≡⟨ cong (_∙ (NFpath z)) {!!} ⟩
+      -- (∣ p ∷+ a ∣?') ∙ NFpath z ∎
+      -- )
+      where
+      n : NF x ↝* NF y
+      n = CR p .fst
+
+      c = CR p .snd
+
+      nx : x ↝* NF x
+      nx = NFmor x
+
+      ny : y ↝* NF y
+      ny = NFmor y
+
+      nz : z ↝* NF z
+      nz = NFmor z
+
+      confl = C ny (snoc a nz)
+
+      n' : NF y ↝* NF z
+      n' = confl .snd .fst · NFisNF' z (confl .snd .snd .fst)
+
+      -- c' : NFpath y ∙ cong ∣_∣'' n' ≡ cong ∣_∣' ∣ a ∣₁ ∙ NFpath z
+      -- c' = --  ∣ confl .snd .snd .snd ∣**
+        -- NFpath y ∙ cong ∣_∣'' n' ≡⟨ refl ⟩
+        -- cong ∣_∣' ∣ ny ∣* ∙ cong ∣_∣' (cong ∣_∣ n') ≡⟨ sym (congFunct ∣_∣' _ _) ⟩
+        -- cong ∣_∣' (∣ ny ∣* ∙ cong ∣_∣ n') ≡⟨ {!!} ⟩
+        -- cong ∣_∣' (∣ ny · confl .snd .fst · {!!} ∣*) ≡⟨ {!∣ confl .snd .snd .snd ∣**!} ⟩
+        -- cong ∣_∣' (∣ a ∣₁ ∙ ∣ nz ∣*) ≡⟨ congFunct ∣_∣' _ _ ⟩
+        -- cong ∣_∣' ∣ a ∣₁ ∙ cong ∣_∣' ∣ nz ∣* ≡⟨ refl ⟩
+        -- cong ∣_∣' ∣ a ∣₁ ∙ NFpath z ∎
+        -- where
+        -- lem =
+          -- ∣ ny · 
+    CR (p ∷- a) = {!!} , {!!}
+
+    -- pathHB :  {x y : Σ₀} → (p q : ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣') → ∣ p ∣ ≡ ∣ q ∣
+    -- pathHB p q = {!elimPath ? ? ? p!}
 

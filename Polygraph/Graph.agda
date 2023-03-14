@@ -215,6 +215,13 @@ module FreePregroupoid where
     [_]- : {y x : X} (a : y ↝ x) → x ↝! y
     [ a ]- = [] ∷- a
 
+    module _ where
+      open FreeCategory
+
+      ofFC : {x y : X} → FreeCategory.T _↝_ x y → x ↝! y
+      ofFC [] = []
+      ofFC (p ∷ a) = ofFC p ∷+ a
+
     infixr 5 _·!_
     _·!_ : {x y z : X} → x ↝! y → y ↝! z → x ↝! z
     p ·! [] = p

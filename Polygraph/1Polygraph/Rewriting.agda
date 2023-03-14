@@ -6,7 +6,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Path
 open import Cubical.Relation.Nullary
-open import Cubical.Data.Empty
+open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Sigma
 
 open import Graph
@@ -42,14 +42,21 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   isNF : (x : Σ₀) → Type _
   isNF x = {y : Σ₀} → x ↝+ y → ⊥
 
-  -- testing alternative definitions of normal forms
-  module test-nf where  
-    isNF' : (x : Σ₀) → Type _
-    isNF' x = {y : Σ₀} → x ↝* y → y ↝* x
+  -- alternative definitions of normal forms
+  isNF' : (x : Σ₀) → Type _
+  isNF' x = {y : Σ₀} → x ↝* y → y ↝* x
+
+  module _ where
+    open FreeCategory
+
+    isNF→isNF' : (x : Σ₀) → isNF x → isNF' x
+    isNF→isNF' x NF [] = []
+    isNF→isNF' x NF (p ∷ a) = ⊥.rec (NF (toSC p a))
 
     -- WFloops : ({x : Σ₀} → x ↝+ x) → Σ₀ → ¬ isWF
     -- WFloops p x wf = induction (WF+ wf) (λ x' ih → ih x' p) x
 
+  private
     -- well-founded graphs don't have loops
     WFloop : isWF P → {x : Σ₀} → ¬ (x ↝+ x)
     WFloop wf {x} p = lem x p
