@@ -51,6 +51,8 @@ module FreeSemicategory where
     [_]⁺ : {x y : A} → R x y → FreeSemicategory R x y
     _∷⁺_ : {x y z : A} → FreeSemicategory R x y → R y z → FreeSemicategory R x z
 
+  T = FreeSemicategory
+
   module _ {A : Type ℓ₀} {R : Graph A ℓ₁} where
     private
       _↝_ = R
@@ -112,10 +114,12 @@ module FreeCategory where
     [] : {x : A} → FreeCategory R x x
     _∷_ : {x y z : A} → FreeCategory R x y → R y z → FreeCategory R x z
 
+  T = FreeCategory
+
   module _ {A : Type ℓ₀} {_↝_ : Graph A ℓ₁} where
     private
       _↝*_ = FreeCategory _↝_
-      _↝+_ = FreeSemicategory.FreeSemicategory _↝_
+      _↝+_ = FreeSemicategory.T _↝_
 
     elim :
       (P : {x y : A} → x ↝* y → Type ℓ₂) →
@@ -196,6 +200,8 @@ module FreePregroupoid where
     _∷+_ : {x y z : X} → FreePregroupoid _↝_ x y → y ↝ z → FreePregroupoid _ x z
     _∷-_ : {x y z : X} → FreePregroupoid _↝_ x y → z ↝ y → FreePregroupoid _ x z
 
+  T = FreePregroupoid
+
   module _ {_↝_ : Graph X ℓ₁} where
     private
       _↝!_ = FreePregroupoid _↝_
@@ -232,6 +238,8 @@ module FreeGroupoid where
     invl : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : z ↝ y)  → (p ∷- a) ∷+ a ≡ p
     invr : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : y ↝ z) → p ∷+ a ∷- a ≡ p
     coh  : {x y z : X} (p : FreeGroupoid _↝_ x y) (a : y ↝ z) → cong (λ p → p ∷+ a) (invr p a) ≡ invl (p ∷+ a) a
+
+  T = FreeGroupoid
 
   module _ {_↝_ : Graph X ℓ₁} where
     private

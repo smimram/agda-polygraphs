@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --cubical --allow-unsolved-metas #-}
 
 module 1Polygraph.Truncated where
 
@@ -17,7 +17,8 @@ private variable
 module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   open Operations P
 
-  -- surjPath : {x y : Σ₀} (p : ∣ x ∣ → ∣ y ∣) → ∥ FreePregroupoid _↝_ x y
+  surjPath : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → ∥ Σ (FreePregroupoid.T _↝_ x y) (λ q → ∣ q ∣? ≡ p) ∥₁
+  surjPath p = {!elimPath ? ? ? p!}
 
   elimPathProp : (A : {x y : ⟦ P ⟧} → x ≡ y → Type ℓ) → ({x y : ⟦ P ⟧} (p : x ≡ y) → isProp (A p)) → {!!}
   elimPathProp A PA = {!!}

@@ -32,10 +32,11 @@ record 1Polygraph : Type (ℓ-suc (ℓ-max ℓ₀ ℓ₁)) where
 module Operations (P : 1Polygraph {ℓ₀} {ℓ₁}) where
   open 1Polygraph P public
 
-  _↝*_ = FreeCategory.FreeCategory _↝_
-  _↝+_ = FreeSemicategory.FreeSemicategory _↝_
-  -- _↭_  = TransReflClosure (SymClosure _↝_)
-  _↭!_ = FreeGroupoid.FreeGroupoid _↝_
+  _↝*_ = FreeCategory.T _↝_
+  _↝+_ = FreeSemicategory.T _↝_
+  _↭!_ = FreeGroupoid.T _↝_
+  _↝!_ = FreeGroupoid.T _↝_
+  _↝?_ = FreePregroupoid.T _↝_
   _↜_ = Graph.op _↝_
   _↜+_ = Graph.op _↝+_
 
@@ -75,6 +76,14 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   ∣_∣* = ∣_∣₁ *
   -- ∣ [] ∣* = refl
   -- ∣ p ∷ a ∣* = ∣ p ∣* ∙ ∣ a ∣₁
+
+  module _ where
+    open FreePregroupoid
+
+    ∣_∣? : {x y : Σ₀} → (x ↝? y) → ∣ x ∣ ≡ ∣ y ∣
+    ∣ [] ∣? = refl
+    ∣ p ∷+ a ∣? = ∣ p ∣? ∙ ∣ a ∣₁
+    ∣ p ∷- a ∣? = ∣ p ∣? ∙ sym ∣ a ∣₁
 
   mapPathComp : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y z : Σ₀} (p : x ↝* y) (q : y ↝* z) → (f *) (p · q) ≡ (f *) p ∙ (f *) q
   mapPathComp f p [] = rUnit _
