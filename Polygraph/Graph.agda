@@ -77,12 +77,19 @@ module FreeSemicategory where
     f-snoc a [ b ]⁺ = refl
     f-snoc a (p ∷⁺ b) = cong (snoc b) (f-snoc a p)
     fg : {x y : A} (p : op (FreeSemicategory R) x y) → f (g p) ≡ p
-    fg = {!!}
+    fg [ a ]⁺ = refl
+    fg (p ∷⁺ a) = f-snoc a (g p) ∙ cong (λ p → p ∷⁺ a) (fg p)
     e : (x y : A) → Iso (FreeSemicategory (op R) x y) (op (FreeSemicategory R) x y)
+    g-snoc : {x y z : A} (a : R z y) (p : op (FreeSemicategory R) x y) → g (snoc a p) ≡ g p ∷⁺ a
+    g-snoc a [ b ]⁺ = refl
+    g-snoc a (p ∷⁺ b) = cong (snoc b) (g-snoc a p)
+    gf : {x y : A} (p : FreeSemicategory (op R) x y) → g (f p) ≡ p
+    gf [ a ]⁺ = refl
+    gf (p ∷⁺ a) = g-snoc a (f p) ∙ cong (λ p → p ∷⁺ a) (gf p)
     Iso.fun (e x y) = f
     Iso.inv (e x y) = g
     Iso.rightInv (e x y) = fg
-    Iso.leftInv (e x y) = {!!}
+    Iso.leftInv (e x y) = gf
 
 module _ {ℓ₀ : Level} {A : Type ℓ₀} (_<_ : Graph A ℓ₂) where
   open FreeSemicategory
