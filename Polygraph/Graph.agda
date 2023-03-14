@@ -431,3 +431,11 @@ module FreeGroupoid where
       ofSC : {x y : X} → (FreeSemicategory.FreeSemicategory _↝_ x y) → x ↝! y
       ofSC [ a ]⁺ = [] ∷+ a
       ofSC (p ∷⁺ a) = ofSC p ∷+ a
+
+    module _ where
+      open import Cubical.HITs.SetTruncation as ST
+
+      _↝?_ = FreeSemicategory.FreeSemicategory _↝_
+
+      setTruncation : (x y : X) → ∥ x ↝! y ∥₂ ≃ x ↝? y
+      setTruncation x y = {!!}

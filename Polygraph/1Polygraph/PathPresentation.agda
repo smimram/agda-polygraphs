@@ -118,3 +118,5 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} {x : 1Polygraph.Σ₀ P} whe
     Iso.inv e =  fst g
     Iso.rightInv e p = funExt⁻ (implicitFunExt⁻ (cong fst gf)) p
     Iso.leftInv e p = funExt⁻ (implicitFunExt⁻ (cong fst fg)) p
+
+  -- pathPresentationProp : {y : Σ₀} → ∥ ∣ x ∣ ≡ ∣ y ∣ ∥₂ ≃ 
