@@ -24,18 +24,12 @@ open import Prelude
 open import 1Polygraph.Base
 open import Magmoid
 
--- The definition of the category C lives in a bigger universe than D because
--- the universe has to be bigger than the one of relations in the first case
--- (and not in the second). For simplicity, we suppose that relations are as
--- high as objects from there on. Similarly, when definining the initial object
--- of C, we get something of level the type of A instead of the level of the
--- objects.
-module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
+module _ {ℓ₀ ℓ₁ : Level} {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   open Operations P
 
   module Magmoids (x : Σ₀) where
     C : Magmoid
-    obj C = Σ (Σ₀ → Type ℓ) λ K → K x × ({y z : Σ₀} → (a : y ↝ z) → K y ≃ K z)
+    obj C = Σ (Σ₀ → Type (ℓ-max ℓ₀ ℓ₁)) λ K → K x × ({y z : Σ₀} → (a : y ↝ z) → K y ≃ K z)
     hom C (K , r , e) (K' , r' , e') = Σ ({y : Σ₀} → K y → K' y) λ f → (f r ≡ r') × ({y z : Σ₀} (a : y ↝ z) (k : K y) → equivFun (e' a) (f k) ≡ f (equivFun (e a) k))
     id C (K , r , e) = (λ k → k) , refl , λ a k → refl
     _⋆_ C {K , r , e} {K' , r' , e'} {K'' , r'' , e''} (f , δ , γ) (f' , δ' , γ') = f' ∘ f , cong f' δ ∙ δ' , λ a k → γ' a (f k) ∙ cong f' (γ a k)
@@ -44,7 +38,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
     CI = (λ y → ∣ x ∣ ≡ ∣ y ∣) , refl {x = ∣ x ∣} , λ a → pathToEquiv (cong (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁) -- compPathrEquiv ∣ a ∣₁
 
     D : Magmoid
-    obj D = Σ (⟦ P ⟧ → Type ℓ) (λ L → L ∣ x ∣)
+    obj D = Σ (⟦ P ⟧ → Type (ℓ-max ℓ₀ ℓ₁)) (λ L → L ∣ x ∣)
     hom D (L , l) (L' , l') = Σ ({n : ⟦ P ⟧} → L n → L' n) (λ g → g l ≡ l')
     id D (L , l) = (λ l → l) , refl
     _⋆_ D (g , ϵ) (g' , ϵ') = (λ l → g' (g l)) , cong g' ϵ ∙ ϵ'
@@ -135,7 +129,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
     obj≃ : obj D ≃ obj C
     obj≃ = isoToEquiv e
       where
-      e : Iso (Σ (⟦ P ⟧ → Type ℓ) (λ L → L ∣ x ∣)) (Σ (Σ₀ → Type ℓ) (λ K → K x × ({y z : Σ₀} (a : y ↝ z) → K y ≃ K z)))
+      e : Iso (Σ (⟦ P ⟧ → Type _) (λ L → L ∣ x ∣)) (Σ (Σ₀ → Type _) (λ K → K x × ({y z : Σ₀} (a : y ↝ z) → K y ≃ K z)))
       Iso.fun e (L , p) = (λ n → L ∣ n ∣) , p , λ a → pathToEquiv (cong L ∣ a ∣₁)
       Iso.inv e (K , r , e) = (rec {f₀ = K} (λ a → ua (e a))) , r
       Iso.rightInv e (K , r , e) = ΣPathP (refl , ΣPathP (refl , implicitFunExt (implicitFunExt (funExt λ a → pathToEquiv-ua (e a)))))
@@ -215,7 +209,7 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} where
   module _
     {x : Σ₀}
     (A : {y : Σ₀}
-    (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type ℓ)
+    (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type (ℓ-max ℓ₀ ℓ₁))
     (Ar : A refl)
     (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (p ∙ ∣ a ∣₁))
     -- (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (subst (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁ p))
