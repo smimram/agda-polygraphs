@@ -18,6 +18,7 @@ open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 open import Prelude
 open import Graph
 open Graph.FreeCategory hiding (elim ; rec)
+open Graph.FreePregroupoid
 open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim ; elimPath)
 
 private variable
@@ -38,13 +39,12 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   data _⇒w_ : {x y : Σ₀} → (x ↝* y) → (x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
     whisk  : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q · r) ⇒w (p · q' · r)
-    whisk⁻ : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q' · r) ⇒w (p · q · r)
 
   infix 4 _⇔*_
 
-  -- TODO: rather use the groupoid closure
+  -- TODO: rather use the groupoid closure?
   _⇔*_ : {x y : Σ₀} (p q : x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
-  _⇔*_ = FreeCategory _⇒w_
+  _⇔*_ = FreePregroupoid _⇒w_
 
   whiskAssoc : {x'' x' x y y' y'' : Σ₀} (p' : x'' ↝* x') (p : x' ↝* x) (q : x ↝* y) (r : y ↝* y') (r' : y' ↝* y'') → p' · (p · q · r) · r' ≡ (p' · p) · q · (r · r')
   whiskAssoc p' p q r r' =
@@ -55,8 +55,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   whisk* : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (ϕ : q ⇔* q') (r : y ↝* y') → (p · q · r) ⇔* (p · q' · r)
   whisk* p [] q = []
-  whisk* p (ϕ ∷ whisk p' α r') r = whisk* p ϕ r · [≡ whiskAssoc p p' _ r' r ] · [ whisk (p · p') α (r' · r) ] · [≡ sym (whiskAssoc p p' _ r' r) ]
-  whisk* p (ϕ ∷ whisk⁻ p' α r') r = whisk* p ϕ r · [≡ whiskAssoc p p' _ r' r ] · [ whisk⁻ (p · p') α (r' · r) ] · [≡ sym (whiskAssoc p p' _ r' r) ]
+  whisk* p (ϕ ∷+ whisk p' α r') r = whisk* p ϕ r ·! [≡ whiskAssoc p p' _ r' r ]! ·! [ whisk (p · p') α (r' · r) ]+ ·! [≡ sym (whiskAssoc p p' _ r' r) ]!
+  whisk* p (ϕ ∷- whisk p' α r') r = whisk* p ϕ r ·! [≡ whiskAssoc p p' _ r' r ]! ·! [ whisk (p · p') α (r' · r) ]- ·! [≡ sym (whiskAssoc p p' _ r' r) ]!
 
   -- local confluence
   isLC : (x : Σ₀) → Type _
@@ -83,8 +83,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   newman wf lc {x = x} = induction (WF+ wf) {P = isC} (λ x ih → lem x ih) x
     where
     lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
-    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]
-    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]
+    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]!
+    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]!
     lem x ih (p ∷ a) (q ∷ b) = {!!}
     -- lem x ih [] q = _ , q , [] , [≡ sym (·-unitr _) ]
     -- lem x ih (x↝y ∷ p) [] = _ , [] , (x↝y ∷ p) , [≡ cong (λ p → x↝y ∷ p) (·-unitr p) ]
@@ -109,7 +109,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ... | z , p' ∷ a , q' , p⇔q = ⊥.rec (ny (toSC p' a))
   ... | z , [] , q' , p⇔q with ∷-destruct q'
   ... | inr (_ , q'' , a , _) = ⊥.rec (ny (toSC q'' a))
-  ... | inl (pq , q'≡[]) = p⇔q · [≡ cong (λ q' → q · q') lem' ]
+  ... | inl (pq , q'≡[]) = p⇔q ·! [≡ cong (λ q' → q · q') lem' ]!
     where
     lem : pq ≡ refl
     lem = S _ _ pq refl
@@ -151,8 +151,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   ∣_∣** : {x y : Σ₀} {p q : x ↝* y} (ϕ : p ⇔* q) → ∣ p ∣*' ≡ ∣ q ∣*'
   ∣ [] ∣** = refl
-  ∣ ϕ ∷ whisk  p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
-  ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
+  ∣ ϕ ∷+ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
+  ∣ ϕ ∷- whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
 
   ---
   --- elimination

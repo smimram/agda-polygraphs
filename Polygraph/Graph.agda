@@ -189,6 +189,25 @@ module FreePregroupoid where
     _∷+_ : {x y z : X} → FreePregroupoid _↝_ x y → y ↝ z → FreePregroupoid _ x z
     _∷-_ : {x y z : X} → FreePregroupoid _↝_ x y → z ↝ y → FreePregroupoid _ x z
 
+  module _ {_↝_ : Graph X ℓ₁} where
+    private
+      _↝!_ = FreePregroupoid _↝_
+
+    [≡_]! : {x y : X} → x ≡ y → x ↝! y
+    [≡_]! {x = x} p = J (λ y _ → x ↝! y) [] p
+
+    [_]+ : {x y : X} (a : x ↝ y) → x ↝! y
+    [ a ]+ = [] ∷+ a
+
+    [_]- : {y x : X} (a : y ↝ x) → x ↝! y
+    [ a ]- = [] ∷- a
+
+    infixr 5 _·!_
+    _·!_ : {x y z : X} → x ↝! y → y ↝! z → x ↝! z
+    p ·! [] = p
+    p ·! (q ∷+ a) = (p ·! q) ∷+ a
+    p ·! (q ∷- a) = (p ·! q) ∷- a
+
 ---
 --- The free higher groupoid
 ---
@@ -210,6 +229,9 @@ module FreeGroupoid where
   module _ {_↝_ : Graph X ℓ₁} where
     private
       _↝!_ = FreeGroupoid _↝_
+
+    [≡_]! : {x y : X} → x ≡ y → x ↝! y
+    [≡_]! {x = x} p = J (λ y _ → x ↝! y) [] p
 
     -- plain elimination principle
     elim :
@@ -241,6 +263,10 @@ module FreeGroupoid where
       (fc : {y z : X} (q : A) (a : y ↝ z) → cong (λ q → f∷+ q a) (fr q a) ≡ fl (f∷+ q a) a) →
       {y : X} (p : x ↝! y) → A
     rec {x = x} {A} f[] f∷+ f∷- fl fr fc = elim (λ _ → A) f[] f∷+ f∷- fl fr fc
+
+    infixr 5 _·!_
+    _·!_ : {x y z : X} → x ↝! y → y ↝! z → x ↝! z
+    p ·! q = elim (λ {z} q → _ ↝! z) p (λ r a → r ∷+ a) (λ r a → r ∷- a) (λ r a → invl r a) (λ r a → invr r a) (λ r a → coh r a) q
 
     -- alternative recurrence principle to an equivalence
     recHAEquiv :
