@@ -135,7 +135,10 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     ∣_∣' : ⟦ Σ' ⟧₁ → ⟦_⟧
     ∣_∣₂ : {x y : Σ₀} {p q : x ↝* y} → p ⇒ q → cong ∣_∣' ∣ p ∣* ≡ cong ∣_∣' ∣ q ∣*
 
-  ∣_∣*' : {x y : Σ₀} (p : x ↝* y) → ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣'
+  ∣_∣'' : Σ₀ → ⟦_⟧
+  ∣ x ∣'' = ∣ ∣ x ∣ ∣'
+
+  ∣_∣*' : {x y : Σ₀} (p : x ↝* y) → ∣ x ∣'' ≡ ∣ y ∣''
   ∣ p ∣*' = cong ∣_∣' ∣ p ∣*
 
   ∣∣*'comp : {x y z : Σ₀} (p : x ↝* y) (q : y ↝* z) → ∣ p · q ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*'
@@ -218,6 +221,23 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       (f₁ *) p ∙ f₁ a                                                       ∎
     lem : cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ cong (rec f₀ f₁ f₂) ∣ q ∣*'
     lem = lem' p ∙ f₂ α ∙ sym (lem' q)
+
+  ---
+  --- hom polygraph
+  ---
+
+  -- record whiskHom (x y : Σ₀) : Type _ where
+    -- field
+      -- whx : Σ₀
+      -- why : Σ₀
+      -- whp : x ↝* whx
+      -- whr : why ↝* y
+      -- whq : whx ↝* why
+      -- whq' : whx ↝* why
+      -- whα : whq ⇒ whq'
+
+  -- hom : (x y : Σ₀) → (∣ x ∣'' ≡ ∣ y ∣'') ≃ ⟦ record { Σ₀ = x ↝* y ; _↝_ = {!!} } ⟧₁
+  -- hom x y = {!!}
 
   ---
   --- homotopy basis
