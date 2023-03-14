@@ -18,7 +18,7 @@ open import Cubical.HITs.PropositionalTruncation as PT hiding (rec ; elim)
 open import Prelude
 open import Graph
 open Graph.FreeCategory hiding (elim ; rec)
-open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim)
+open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim ; elimPath)
 
 private variable
   ℓ ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
@@ -151,7 +151,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   ∣_∣** : {x y : Σ₀} {p q : x ↝* y} (ϕ : p ⇔* q) → ∣ p ∣*' ≡ ∣ q ∣*'
   ∣ [] ∣** = refl
-  ∣ ϕ ∷ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
+  ∣ ϕ ∷ whisk  p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
   ∣ ϕ ∷ whisk⁻ p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
 
   ---
@@ -211,11 +211,11 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     lem' : {x y : Σ₀} (p : x ↝* y) → cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ (f₁ *) p
     lem' [] = refl
     lem' (p ∷ a) =
-      cong (rec f₀ f₁ f₂) ∣ p ∷ a ∣*' ≡⟨ refl ⟩
-      cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∷ a ∣* ≡⟨ refl ⟩
-      cong (rec f₀ f₁ f₂ ∘ ∣_∣') (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∣* ∣ a ∣₁ ⟩
+      cong (rec f₀ f₁ f₂) ∣ p ∷ a ∣*'                                       ≡⟨ refl ⟩
+      cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∷ a ∣*                                 ≡⟨ refl ⟩
+      cong (rec f₀ f₁ f₂ ∘ ∣_∣') (∣ p ∣* ∙ ∣ a ∣₁)                          ≡⟨ congFunct (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∣* ∣ a ∣₁ ⟩
       cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ p ∣* ∙ cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ a ∣₁ ≡⟨ cong (_∙ (cong (rec f₀ f₁ f₂ ∘ ∣_∣') ∣ a ∣₁)) (lem' p) ⟩
-      (f₁ *) p ∙ f₁ a ∎
+      (f₁ *) p ∙ f₁ a                                                       ∎
     lem : cong (rec f₀ f₁ f₂) ∣ p ∣*' ≡ cong (rec f₀ f₁ f₂) ∣ q ∣*'
     lem = lem' p ∙ f₂ α ∙ sym (lem' q)
 
