@@ -165,8 +165,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣∣*'comp₃ : {x y z w : Σ₀} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → ∣ p · q · r ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*' ∙ ∣ r ∣*'
   ∣∣*'comp₃ p q r = ∣∣*'comp p (q · r) ∙ cong (_∙_ ∣ p ∣*') (∣∣*'comp q r)
 
-  |[]|*' : {x y : Σ₀} (a : x ↝ y) → ∣ [ a ] ∣*' ≡ cong ∣_∣' ∣ a ∣₁
-  |[]|*' a = cong (cong ∣_∣') (sym (GL.lUnit _))
+  ∣[]∣*' : {x y : Σ₀} (a : x ↝ y) → ∣ [ a ] ∣*' ≡ cong ∣_∣' ∣ a ∣₁
+  ∣[]∣*' a = cong (cong ∣_∣') (sym (GL.lUnit _))
     -- ∣ [ a ] ∣*' ≡⟨ refl ⟩
     -- cong ∣_∣' ∣ [] ∷ a ∣* ≡⟨ refl ⟩
     -- cong ∣_∣' (refl ∙ ∣ a ∣₁) ≡⟨ cong (cong ∣_∣') (sym (GL.lUnit _)) ⟩
@@ -335,18 +335,18 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     private
       CRpath : {x y : Σ₀} (p : x ↝* y) → ∣ NFmor x ∣*' ∙ ∣ NFmap p ∣*' ≡ ∣ p ∣*' ∙ ∣ NFmor y ∣*'
       CRpath {x} {y} p =
-        ∣ nx ∣*' ∙ ∣ NFmap p ∣*' ≡⟨ cong (_∙_ ∣ nx ∣*') {!!}  ⟩
-        ∣ nx ∣*' ∙ ∣ nxr · nyl⁻ ∣*' ≡⟨ {!!} ⟩
-        ∣ nx ∣*' ∙ (∣ nxr ∣*' ∙ ∣ nyl⁻ ∣*') ≡⟨ {!!} ⟩
-        (∣ nx ∣*' ∙ ∣ nxr ∣*') ∙ ∣ nyl⁻ ∣*' ≡⟨ {!!} ⟩
-        ∣ nx · nxr ∣*' ∙ ∣ nyl⁻ ∣*' ≡⟨ cong (_∙ ∣ nyl⁻ ∣*') ∣ c ∣** ⟩
-        ∣ (p · ny) · nyl ∣*' ∙ ∣ nyl⁻ ∣*' ≡⟨ {!!} ⟩
-        (∣ p · ny ∣*' ∙ ∣ nyl ∣*') ∙ ∣ nyl⁻ ∣*' ≡⟨ {!!} ⟩
-        ∣ p · ny ∣*' ∙ ∣ nyl ∣*' ∙ ∣ nyl⁻ ∣*' ≡⟨ cong (_∙_ ∣ p · ny ∣*') {!!} ⟩
-        ∣ p · ny ∣*' ∙ ∣ nyl · nyl⁻ ∣*' ≡⟨ cong (_∙_ ∣ p · ny ∣*') (cong ∣_∣*' (WFloop WF S₀ (nyl · nyl⁻))) ⟩
-        ∣ p · ny ∣*' ∙ ∣ [] ∣*' ≡⟨ sym (rUnit _) ⟩
-        ∣ p · ny ∣*' ≡⟨ {!!} ⟩
-        ∣ p ∣*' ∙ ∣ ny ∣*' ∎
+        ∣ nx ∣*' ∙ ∣ NFmap p ∣*'                ≡⟨ cong (_∙_ ∣ nx ∣*') refl  ⟩
+        ∣ nx ∣*' ∙ ∣ nxr · nyl⁻ ∣*'             ≡⟨ cong (_∙_ ∣ nx ∣*') (∣∣*'comp nxr nyl⁻) ⟩
+        ∣ nx ∣*' ∙ ∣ nxr ∣*' ∙ ∣ nyl⁻ ∣*'       ≡⟨ GL.assoc _ _ _ ⟩
+        (∣ nx ∣*' ∙ ∣ nxr ∣*') ∙ ∣ nyl⁻ ∣*'     ≡⟨ cong (_∙ ∣ nyl⁻ ∣*') (sym (∣∣*'comp nx nxr)) ⟩
+        ∣ nx · nxr ∣*' ∙ ∣ nyl⁻ ∣*'             ≡⟨ cong (_∙ ∣ nyl⁻ ∣*') ∣ c ∣** ⟩
+        ∣ (p · ny) · nyl ∣*' ∙ ∣ nyl⁻ ∣*'       ≡⟨ cong (_∙ ∣ nyl⁻ ∣*') (∣∣*'comp (p · ny) nyl) ⟩
+        (∣ p · ny ∣*' ∙ ∣ nyl ∣*') ∙ ∣ nyl⁻ ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
+        ∣ p · ny ∣*' ∙ ∣ nyl ∣*' ∙ ∣ nyl⁻ ∣*'   ≡⟨ cong (_∙_ ∣ p · ny ∣*') (sym (∣∣*'comp nyl nyl⁻)) ⟩
+        ∣ p · ny ∣*' ∙ ∣ nyl · nyl⁻ ∣*'         ≡⟨ cong (_∙_ ∣ p · ny ∣*') (cong ∣_∣*' (WFloop WF S₀ (nyl · nyl⁻))) ⟩
+        ∣ p · ny ∣*' ∙ ∣ [] ∣*'                 ≡⟨ sym (rUnit _) ⟩
+        ∣ p · ny ∣*'                            ≡⟨ ∣∣*'comp p ny ⟩
+        ∣ p ∣*' ∙ ∣ ny ∣*'                      ∎
         where
         nx : x ↝* NF x
         nx = NFmor x
@@ -362,25 +362,59 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
         c : nx · nxr ⇔* (p · ny) · nyl
         c = confl .snd .snd .snd
 
-
     -- Church-Rosser
     CR : {x y : Σ₀} (p : x ↝? y) → Σ (NF x ↝* NF y) (λ n → ∣ NFmor x ∣*' ∙ ∣ n ∣*' ≡ ∣ p ∣?' ∙ ∣ NFmor y ∣*')
     CR [] =  [] , sym (GL.rUnit _) ∙ GL.lUnit _
     CR (_∷+_ {x} {y} {z} p a)= n · n' , (
-      ∣ nx ∣*' ∙ ∣ n · n' ∣*' ≡⟨ cong (_∙_ ∣ nx ∣*') (∣∣*'comp n n') ⟩
-      ∣ nx ∣*' ∙ ∣ n ∣*' ∙ ∣ n' ∣*' ≡⟨ GL.assoc _ _ _ ⟩
-      (∣ nx ∣*' ∙ ∣ n ∣*') ∙ ∣ n' ∣*' ≡⟨ cong (_∙ ∣ n' ∣*') c ⟩
-      (∣ p ∣?' ∙ ∣ ny ∣*') ∙ ∣ n' ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
-      ∣ p ∣?' ∙ ∣ ny ∣*' ∙ ∣ n' ∣*' ≡⟨ cong (_∙_ ∣ p ∣?') (CRpath [ a ]) ⟩
-      ∣ p ∣?' ∙ ∣ [ a ] ∣*' ∙ ∣ nz ∣*' ≡⟨ {!!} ⟩
-      ∣ p ∣?' ∙  ∣ a ∣₁' ∙ ∣ nz ∣*' ≡⟨ GL.assoc _ _ _ ⟩
-      (∣ p ∣?' ∙  ∣ a ∣₁') ∙ ∣ nz ∣*' ≡⟨ cong (_∙ ∣ nz ∣*') (cong (_∙_ ∣ p ∣?') (sym (|[]|?' a))) ⟩
+      ∣ nx ∣*' ∙ ∣ n · n' ∣*'             ≡⟨ cong (_∙_ ∣ nx ∣*') (∣∣*'comp n n') ⟩
+      ∣ nx ∣*' ∙ ∣ n ∣*' ∙ ∣ n' ∣*'       ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ nx ∣*' ∙ ∣ n ∣*') ∙ ∣ n' ∣*'     ≡⟨ cong (_∙ ∣ n' ∣*') c ⟩
+      (∣ p ∣?' ∙ ∣ ny ∣*') ∙ ∣ n' ∣*'     ≡⟨ sym (GL.assoc _ _ _) ⟩
+      ∣ p ∣?' ∙ ∣ ny ∣*' ∙ ∣ n' ∣*'       ≡⟨ cong (_∙_ ∣ p ∣?') (CRpath [ a ]) ⟩
+      ∣ p ∣?' ∙ ∣ [ a ] ∣*' ∙ ∣ nz ∣*'    ≡⟨ cong (_∙_ ∣ p ∣?') (cong (_∙ ∣ nz ∣*') (∣[]∣*' a)) ⟩
+      ∣ p ∣?' ∙ ∣ a ∣₁' ∙ ∣ nz ∣*'        ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ p ∣?' ∙ ∣ a ∣₁') ∙ ∣ nz ∣*'      ≡⟨ cong (_∙ ∣ nz ∣*') (cong (_∙_ ∣ p ∣?') (sym (|[]|?' a))) ⟩
       (∣ p ∣?' ∙ ∣ [ a ]+ ∣?') ∙ ∣ nz ∣*' ≡⟨ cong (_∙ ∣ nz ∣*') (sym (∣∣?'comp p [ a ]+)) ⟩
-      (∣ p ·? [ a ]+ ∣?') ∙ ∣ nz ∣*' ≡⟨ cong (_∙ ∣ nz ∣*') refl ⟩
-      ∣ p ∷+ a ∣?' ∙ ∣ nz ∣*' ∎)
+      (∣ p ·? [ a ]+ ∣?') ∙ ∣ nz ∣*'      ≡⟨ cong (_∙ ∣ nz ∣*') refl ⟩
+      ∣ p ∷+ a ∣?' ∙ ∣ nz ∣*'             ∎)
       where
       n : NF x ↝* NF y
       n = CR p .fst
+
+      n' : NF y ↝* NF z
+      n' = NFmap [ a ]
+
+      c = CR p .snd
+
+      nx : x ↝* NF x
+      nx = NFmor x
+
+      ny : y ↝* NF y
+      ny = NFmor y
+
+      nz : z ↝* NF z
+      nz = NFmor z
+    CR (_∷-_ {x} {y} {z} p a) = n · n' , (
+      ∣ nx ∣*' ∙ ∣ n · n' ∣*'              ≡⟨ cong (_∙_ ∣ nx ∣*') (∣∣*'comp n n') ⟩
+      ∣ nx ∣*' ∙ ∣ n ∣*' ∙ ∣ n' ∣*'        ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ nx ∣*' ∙ ∣ n ∣*') ∙ ∣ n' ∣*'      ≡⟨ cong (_∙ ∣ n' ∣*') c ⟩
+      (∣ p ∣?' ∙ ∣ ny ∣*') ∙ ∣ n' ∣*'      ≡⟨ sym (GL.assoc _ _ _) ⟩
+      ∣ p ∣?' ∙ ∣ ny ∣*' ∙ ∣ n' ∣*'        ≡⟨ cong (_∙_ ∣ p ∣?') c' ⟩
+      ∣ p ∣?' ∙ sym ∣ [ a ] ∣*' ∙ ∣ nz ∣*' ≡⟨ cong (_∙_ ∣ p ∣?') (cong (_∙ ∣ nz ∣*') (cong sym (∣[]∣*' a))) ⟩
+      ∣ p ∣?' ∙ sym ∣ a ∣₁' ∙ ∣ nz ∣*'     ≡⟨ GL.assoc _ _ _ ⟩
+      (∣ p ∣?' ∙ sym ∣ a ∣₁') ∙ ∣ nz ∣*'   ≡⟨ cong (_∙ ∣ nz ∣*') (cong (_∙_ ∣ p ∣?') (sym (|[]|?'- a))) ⟩
+      (∣ p ∣?' ∙ ∣ [ a ]- ∣?') ∙ ∣ nz ∣*'  ≡⟨ cong (_∙ ∣ nz ∣*') (sym (∣∣?'comp p [ a ]-)) ⟩
+      (∣ p ·? [ a ]- ∣?') ∙ ∣ nz ∣*'       ≡⟨ cong (_∙ ∣ nz ∣*') refl ⟩
+      ∣ p ∷- a ∣?' ∙ ∣ nz ∣*'              ∎)
+      where
+      |[]|?'- : {x y : Σ₀} (a : x ↝ y) → ∣ [ a ]- ∣?' ≡ sym ∣ a ∣₁'
+      |[]|?'- a = cong (cong ∣_∣') (sym (GL.lUnit _))
+
+      n : NF x ↝* NF y
+      n = CR p .fst
+
+      n' : NF y ↝* NF z
+      n' = NFisNF' (NFmap [ a ])
 
       c = CR p .snd
 
@@ -393,39 +427,32 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
       nz : z ↝* NF z
       nz = NFmor z
 
-      confl = C ny (snoc a nz)
-
-      nyr : NF y ↝* fst confl
-      nyr = confl .snd .fst
-
-      nzl : NF z ↝* fst confl
-      nzl = confl .snd .snd .fst
-
-      nzl⁻ : fst confl ↝* NF z
-      nzl⁻ = NFisNF' nzl
-
-      n' = NFmap [ a ]
-
-      -- n' : NF y ↝* NF z
-      -- n' = nyr · nzl⁻
-
-      -- c' : ∣ ny ∣*' ∙ ∣ n' ∣*' ≡ cong ∣_∣' ∣ a ∣₁ ∙ ∣ nz ∣*'
-      -- c' =
-        -- ∣ ny ∣*' ∙ ∣ n' ∣*' ≡⟨ cong (_∙_ ∣ ny ∣*' ) refl ⟩
-        -- ∣ ny ∣*' ∙ ∣ nyr · nzl⁻ ∣*' ≡⟨ cong (_∙_ ∣ ny ∣*' ) (∣∣*'comp nyr nzl⁻) ⟩
-        -- ∣ ny ∣*' ∙ ∣ nyr ∣*' ∙ ∣ nzl⁻ ∣*' ≡⟨ GL.assoc _ _ _ ⟩
-        -- (∣ ny ∣*' ∙ ∣ nyr ∣*') ∙ ∣ nzl⁻ ∣*' ≡⟨ cong (_∙ ∣ nzl⁻ ∣*') (sym (∣∣*'comp ny nyr)) ⟩
-        -- (∣ ny · nyr ∣*') ∙ ∣ nzl⁻ ∣*' ≡⟨ cong (_∙ ∣ nzl⁻ ∣*') ∣ confl .snd .snd .snd ∣** ⟩
-        -- ∣ ([ a ] · nz) · nzl ∣*' ∙ ∣ nzl⁻ ∣*' ≡⟨ cong (_∙ ∣ nzl⁻ ∣*') (∣∣*'comp (snoc a nz) nzl) ⟩
-        -- (∣ [ a ] · nz ∣*' ∙ ∣ nzl ∣*') ∙ ∣ nzl⁻ ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
-        -- ∣ [ a ] · nz ∣*' ∙ ∣ nzl ∣*' ∙ ∣ nzl⁻ ∣*' ≡⟨ cong (_∙_ ∣ snoc a nz ∣*') (sym (∣∣*'comp nzl nzl⁻)) ⟩
-        -- ∣ [ a ] · nz ∣*' ∙ ∣ nzl · nzl⁻ ∣*' ≡⟨ cong (_∙_ ∣ snoc a nz ∣*') (cong ∣_∣*' (WFloop WF S₀ (nzl · nzl⁻))) ⟩
-        -- ∣ [ a ] · nz ∣*' ∙ ∣ [] ∣*' ≡⟨ sym (rUnit _) ⟩
-        -- ∣ [ a ] · nz ∣*' ≡⟨ ∣∣*'comp [ a ] nz ⟩
-        -- ∣ [ a ] ∣*' ∙ ∣ nz ∣*' ≡⟨ cong (_∙ ∣ nz ∣*') (|[]|*' a) ⟩
-        -- cong ∣_∣' ∣ a ∣₁ ∙ ∣ nz ∣*' ∎
-    CR (p ∷- a) = {!!} , {!!}
-
-    -- pathHB :  {x y : Σ₀} → (p q : ∣ ∣ x ∣ ∣' ≡ ∣ ∣ y ∣ ∣') → ∣ p ∣ ≡ ∣ q ∣
-    -- pathHB p q = {!elimPath ? ? ? p!}
-
+      c' : ∣ ny ∣*' ∙ ∣ n' ∣*' ≡ sym ∣ [ a ] ∣*' ∙ ∣ nz ∣*'
+      c' =
+        ∣ ny ∣*' ∙ ∣ n' ∣*'                                   ≡⟨ GL.lUnit _ ⟩
+        refl ∙ ∣ ny ∣*' ∙ ∣ n' ∣*'                            ≡⟨ cong (_∙ ∣ ny ∣*' ∙ ∣ n' ∣*' ) (sym (GL.lCancel _)) ⟩
+        (sym ∣ [ a ] ∣*' ∙ ∣ [ a ] ∣*') ∙ ∣ ny ∣*' ∙ ∣ n' ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
+        sym ∣ [ a ] ∣*' ∙ (∣ [ a ] ∣*' ∙ ∣ ny ∣*' ∙ ∣ n' ∣*') ≡⟨ cong (_∙_ (sym ∣ [ a ] ∣*')) lem ⟩
+        sym ∣ [ a ] ∣*' ∙ ∣ nz ∣*'                            ∎
+        where
+        confl = C nz ([ a ] · ny)
+        nzr = confl .snd .fst
+        nyl = confl .snd .snd .fst
+        nyl⁻ = NFisNF' nyl
+        lem' : ∣ NFmap [ a ] ∣*' ≡ sym ∣ n' ∣*'
+        lem' =
+          ∣ NFmap [ a ] ∣*'                             ≡⟨ GL.rUnit _ ⟩
+          ∣ NFmap [ a ] ∣*' ∙ refl                      ≡⟨ cong (_∙_ ∣ NFmap [ a ] ∣*') (sym (rCancel _)) ⟩
+          ∣ NFmap [ a ] ∣*' ∙ ∣ n' ∣*' ∙ sym ∣ n' ∣*'   ≡⟨ GL.assoc _ _ _ ⟩
+          (∣ NFmap [ a ] ∣*' ∙ ∣ n' ∣*') ∙ sym ∣ n' ∣*' ≡⟨ cong (_∙ (sym ∣ n' ∣*')) (sym (∣∣*'comp (NFmap [ a ]) n')) ⟩
+          ∣ NFmap [ a ] · n' ∣*' ∙ sym ∣ n' ∣*'         ≡⟨ cong (_∙ (sym ∣ n' ∣*')) (cong ∣_∣*' (WFloop WF S₀ (NFmap [ a ] · n'))) ⟩
+          ∣ [] ∣*' ∙ sym ∣ n' ∣*'                       ≡⟨ sym (GL.lUnit _) ⟩
+          sym ∣ n' ∣*'                                  ∎
+        lem =
+          ∣ [ a ] ∣*' ∙ ∣ ny ∣*' ∙ ∣ n' ∣*'         ≡⟨ GL.assoc _ _ _ ⟩
+          (∣ [ a ] ∣*' ∙ ∣ ny ∣*') ∙ ∣ n' ∣*'       ≡⟨ cong (_∙ ∣ n' ∣*') (sym (CRpath [ a ])) ⟩
+          (∣ nz ∣*' ∙ ∣ NFmap [ a ] ∣*') ∙ ∣ n' ∣*' ≡⟨ sym (GL.assoc _ _ _) ⟩
+          ∣ nz ∣*' ∙ (∣ NFmap [ a ] ∣*' ∙ ∣ n' ∣*') ≡⟨ cong (_∙_ ∣ nz ∣*') (cong (_∙ ∣ n' ∣*') lem') ⟩
+          ∣ nz ∣*' ∙ (sym ∣ n' ∣*' ∙ ∣ n' ∣*')      ≡⟨ cong (_∙_ ∣ nz ∣*') (lCancel _) ⟩
+          ∣ nz ∣*' ∙ refl                           ≡⟨ sym (rUnit _) ⟩
+          ∣ nz ∣*'                                  ∎
