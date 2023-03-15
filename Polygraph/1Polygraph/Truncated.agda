@@ -31,7 +31,12 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
     ({x y : ⟦ P ⟧} (p : x ≡ y) → isProp (A p)) →
     ({x y : Σ₀} (p : x ↝? y) → A ∣ p ∣?) →
     {x y : ⟦ P ⟧} (p : x ≡ y) → A p
-  elimPathProp A AP f {x} {y} p = elimProp (λ x → {y : ⟦ P ⟧} (p : x ≡ y) → A p) (λ x → isPropImplicitΠ λ y → isPropΠ λ p → AP p) (λ x {y} p → {!!}) x {y} p
+  elimPathProp A AP f {x} {y} p =
+    elimProp (λ x → {y : ⟦ P ⟧} (p : x ≡ y) → A p) (λ x → isPropImplicitΠ λ y → isPropΠ AP) (λ x {y} p →
+      elimProp (λ y → (p : ∣ x ∣ ≡ y) → A p) (λ y → isPropΠ AP) (λ y p →
+        PT.elim (λ _ → AP p) (λ { (q , r) → subst A r (f q) }) (surjPath p)
+      ) y p
+    ) x {y} p
 
   recSet :
     (A : Type ℓ)
