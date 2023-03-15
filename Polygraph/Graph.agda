@@ -28,7 +28,7 @@ open import Cubical.Induction.WellFounded renaming
 induction = WFI.induction
 
 private variable
-  ℓ₀ ℓ₁ ℓ₂ : Level
+  ℓ₀ ℓ₁ ℓ₂ ℓ : Level
   A : Type ℓ₀
   X : Type ℓ₀
   R : Graph A ℓ₁
@@ -136,6 +136,11 @@ module FreeCategory where
       {x y : X} → x ↝* y → P
     rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {x} → P[] x) P∷
 
+    -- mapping a function to paths to the elements of the list (geometric realization)
+    _* : {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) {x y : X} → x ↝* y → f₀ x ≡ f₀ y
+    (f *) [] = refl
+    (f *) (p ∷ a) = (f *) p ∙ f a
+
     ∷-destruct : {x z : X} (q : x ↝* z) → (Σ (x ≡ z) λ p → subst (λ x → x ↝* z) p q ≡ []) ⊎ Σ X (λ y → Σ (x ↝* y) λ p → Σ (y ↝ z) λ a → q ≡ p ∷ a)
     ∷-destruct {z = z} [] = inl (refl , substRefl {B = λ x → x ↝* z} [])
     ∷-destruct (q ∷ a) = inr (_ , q , a , refl)
@@ -219,6 +224,7 @@ module FreePregroupoid where
   module _ {_↝_ : Graph X ℓ₁} where
     private
       _↝!_ = FreePregroupoid _↝_
+      _↝?_ = FreePregroupoid _↝_
 
     [≡_]! : {x y : X} → x ≡ y → x ↝! y
     [≡_]! {x = x} p = J (λ y _ → x ↝! y) [] p
@@ -243,6 +249,13 @@ module FreePregroupoid where
     p ·! (q ∷- a) = (p ·! q) ∷- a
 
     _·?_ = _·!_
+
+    _*? : {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) {x y : X} → x ↝? y → f₀ x ≡ f₀ y
+    (f *?) [] = refl
+    (f *?) (p ∷+ a) = (f *?) p ∙ f a
+    (f *?) (p ∷- a) = (f *?) p ∙ sym (f a)
+
+    toPath = _*?
 
 ---
 --- The free higher groupoid

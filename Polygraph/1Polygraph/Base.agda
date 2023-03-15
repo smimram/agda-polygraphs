@@ -70,11 +70,6 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   eta : (A : ⟦ P ⟧ → Type ℓ₃) (f : (x : ⟦ P ⟧) → A x) → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) ≡ f
   eta A f = funExt (elim (λ n → elim A (λ x → f ∣ x ∣) (λ a → cong f ∣ a ∣₁) n ≡ f n) (λ x → refl) (λ {x} {y} a i → refl))
 
-  -- mapping a function to paths to the elements of the list
-  _* : {A : Type ℓ₃} {f₀ : Σ₀ → A} (f : {x y : Σ₀} → x ↝ y → f₀ x ≡ f₀ y) {x y : Σ₀} → x ↝* y → f₀ x ≡ f₀ y
-  (f *) [] = refl
-  (f *) (p ∷ a) = (f *) p ∙ f a
-
   ∣_∣* : {x y : Σ₀} → (x ↝* y) → ∣ x ∣ ≡ ∣ y ∣
   ∣_∣* = ∣_∣₁ *
   -- ∣ [] ∣* = refl
