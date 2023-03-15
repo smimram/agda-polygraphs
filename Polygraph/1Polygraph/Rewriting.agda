@@ -1,10 +1,11 @@
-{-# OPTIONS --cubical #-}
+{-# OPTIONS --cubical --allow-unsolved-metas #-}
 
 module 1Polygraph.Rewriting where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Path
+open import Cubical.Foundations.Transport
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.Sigma
@@ -49,28 +50,30 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   module _ where
     open FreeCategory
 
-    isNF→isNF' : (x : Σ₀) → isNF x → isNF' x
-    isNF→isNF' x NF [] = []
-    isNF→isNF' x NF (p ∷ a) = ⊥.rec (NF (toSC p a))
+    isNF→isNF' : {x : Σ₀} → isNF x → isNF' x
+    isNF→isNF' NF [] = []
+    isNF→isNF' NF (p ∷ a) = ⊥.rec (NF (toSC p a))
 
-    -- WFloops : ({x : Σ₀} → x ↝+ x) → Σ₀ → ¬ isWF
-    -- WFloops p x wf = induction (WF+ wf) (λ x' ih → ih x' p) x
+    -- This definition is closer to the traditional one but less nice
+    isNF'' : (x : Σ₀) → Type _
+    isNF'' x = {y : Σ₀} (f : x ↝* y) → Σ (x ≡ y) (λ p → subst (λ x → x ↝* y) p f ≡ [])
 
-  private
-    -- well-founded graphs don't have loops
-    WFloop : isWF P → {x : Σ₀} → ¬ (x ↝+ x)
-    WFloop wf {x} p = lem x p
-      where
-      lem : (x : Σ₀) → x ↝+ x → ⊥
-      lem x = induction (WF+ wf) {P = λ x → x ↝+ x → ⊥} (λ x ih q → ih x q q) x
+    module _ (wf : isWF P) where
+      -- well-founded graphs don't have loops
+      WFloop+ : {x : Σ₀} → ¬ (x ↝+ x)
+      WFloop+ {x} p = lem x p
+        where
+        lem : (x : Σ₀) → x ↝+ x → ⊥
+        lem x = induction (WF+ wf) {P = λ x → x ↝+ x → ⊥} (λ x ih q → ih x q q) x
+
+      WFloop : isSet Σ₀ → {x : Σ₀} (p : x ↝* x) → p ≡ []
+      WFloop S₀ {x} p = FreeCategory.elimPath (λ p → p ≡ []) lem (λ p a → ⊥.rec (WFloop+ (toSC p a))) p
+        where
+        lem : (q : x ≡ x) → subst⁻ (λ y → y ↝* x) q [] ≡ []
+        lem q = cong (λ q → subst⁻ (λ y → y ↝* x) q []) (S₀ x x q refl) ∙ substRefl {B = λ y → y ↝* x} []
 
     -- isNF'→isNF : isWF → {x : Σ₀} → isNF' x → isNF x
     -- isNF'→isNF wf n p = WFloop wf {!!} -- WFloop wf (append p (n (t→rt p)))
-
-    -- -- This definition is closer to the traditional one but less nice than the
-    -- -- above one.
-    -- isNF'' : (x : Σ₀) → Type _
-    -- isNF'' x = {y : Σ₀} (f : x ↝* y) → Σ (x ≡ y) (λ p → subst (λ x → x ↝* y) p f ≡ [])
 
     -- isNF'→isNF'' : isWF → (x : Σ₀) → isNF' x → isNF'' x
     -- isNF'→isNF'' wf x n [] = refl , {!!}

@@ -116,68 +116,82 @@ module FreeCategory where
 
   T = FreeCategory
 
-  module _ {A : Type ℓ₀} {_↝_ : Graph A ℓ₁} where
+  module _ {X : Type ℓ₀} {_↝_ : Graph X ℓ₁} where
     private
       _↝*_ = FreeCategory _↝_
       _↝+_ = FreeSemicategory.T _↝_
 
     elim :
-      (P : {x y : A} → x ↝* y → Type ℓ₂) →
-      ({x : A} → P ([] {x = x})) →
-      ({x y z : A} (p : x ↝* y) (a : y ↝ z) → P (p ∷ a)) →
-      {x y : A} (p : x ↝* y) → P p
+      (P : {x y : X} → x ↝* y → Type ℓ₂) →
+      ({x : X} → P ([] {x = x})) →
+      ({x y z : X} (p : x ↝* y) (a : y ↝ z) → P (p ∷ a)) →
+      {x y : X} (p : x ↝* y) → P p
     elim P P[] P∷ [] = P[]
     elim P P[] P∷ (x ∷ p) = P∷ x p
 
     rec :
       {P : Type ℓ₂} →
-      ((x : A) → P) →
-      ({x y z : A} → x ↝* y → y ↝ z → P) →
-      {x y : A} → x ↝* y → P
+      ((x : X) → P) →
+      ({x y z : X} → x ↝* y → y ↝ z → P) →
+      {x y : X} → x ↝* y → P
     rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {x} → P[] x) P∷
 
-    snoc : {x y z : A} → x ↝ y → y ↝* z → x ↝* z
-    snoc a [] = [] ∷ a
-    snoc a (p ∷ b) = (snoc a p) ∷ b
-
-    ∷-destruct : {x z : A} (q : x ↝* z) → (Σ (x ≡ z) λ p → subst (λ x → x ↝* z) p q ≡ []) ⊎ Σ A (λ y → Σ (x ↝* y) λ p → Σ (y ↝ z) λ a → q ≡ p ∷ a)
+    ∷-destruct : {x z : X} (q : x ↝* z) → (Σ (x ≡ z) λ p → subst (λ x → x ↝* z) p q ≡ []) ⊎ Σ X (λ y → Σ (x ↝* y) λ p → Σ (y ↝ z) λ a → q ≡ p ∷ a)
     ∷-destruct {z = z} [] = inl (refl , substRefl {B = λ x → x ↝* z} [])
     ∷-destruct (q ∷ a) = inr (_ , q , a , refl)
 
-    [_] : {x y : A} → x ↝ y → x ↝* y
+    -- eliminate paths with fixed endpoints
+    elimPath : {x z : X} {ℓ : Level} (A : x ↝* z → Type ℓ) → ((p : x ≡ z) → A (subst⁻ (λ x → x ↝* z) p [])) → ({y : X} (p : x ↝* y) (a : y ↝ z) → A (p ∷ a)) → (p : x ↝* z) → A p
+    elimPath {x = x} {z = z} A A[] A∷ p' with ∷-destruct p'
+    ... | inl (p , q) = subst A lem (A[] p)
+      where
+      lem : subst⁻ (λ x → x ↝* z) p [] ≡ p'
+      lem =
+        subst⁻ (λ x → x ↝* z) p [] ≡⟨ cong (subst⁻ (λ x → x ↝* z) p) (sym q) ⟩
+        subst⁻ (λ x → x ↝* z) p (subst (λ x → x ↝* z) p p') ≡⟨ subst⁻Subst (λ x → x ↝* z) p p' ⟩
+        p' ∎
+    ... | inr (y , p , a , q) = subst A (sym q) (A∷ p a)
+
+    recPath : {x z : X} {ℓ : Level} {A : Type ℓ} → ((p : x ≡ z) → A) → ({y : X} (p : x ↝* y) (a : y ↝ z) → A) → x ↝* z → A
+    recPath {A = A} = elimPath (λ _ → A)
+
+    [_] : {x y : X} → x ↝ y → x ↝* y
     [ a ] = [] ∷ a
 
     infixr 5 _·_
-    _·_ : {x y z : A} → x ↝* y → y ↝* z → x ↝* z
+    _·_ : {x y z : X} → x ↝* y → y ↝* z → x ↝* z
     p · [] = p
     p · (q ∷ a) = (p · q) ∷ a
+
+    snoc : {x y z : X} → x ↝ y → y ↝* z → x ↝* z
+    snoc a p = [ a ] · p
     
-    [≡_] : {x y : A} → x ≡ y → x ↝* y
+    [≡_] : {x y : X} → x ≡ y → x ↝* y
     [≡_] {x = x} p = J (λ y _ → x ↝* y) [] p
 
-    assoc : {x y z w : A} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → (p · q) · r ≡ p · (q · r)
+    assoc : {x y z w : X} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → (p · q) · r ≡ p · (q · r)
     assoc p q [] = refl
     assoc p q (r ∷ a) = cong (λ p → p ∷ a) (assoc p q r)
 
-    lUnit : {x y : A} (p : x ↝* y) → p ≡ [] · p
+    lUnit : {x y : X} (p : x ↝* y) → p ≡ [] · p
     lUnit [] = refl
     lUnit (p ∷ a) = cong (λ p → p ∷ a) (lUnit p)
 
-    toSC : {x y z : A} (p : x ↝* y) (a : y ↝ z) → x ↝+ z
+    toSC : {x y z : X} (p : x ↝* y) (a : y ↝ z) → x ↝+ z
     toSC [] a = [ a ]⁺
       where open FreeSemicategory
     toSC (p ∷ b) a = toSC p b ∷⁺ a
       where open FreeSemicategory
 
-    data isEmpty : {x y : A} → x ↝* y → Type (ℓ-max ℓ₀ ℓ₁) where
-      empty[] : {x : A} → isEmpty {x} {x} []
+    data isEmpty : {x y : X} → x ↝* y → Type (ℓ-max ℓ₀ ℓ₁) where
+      empty[] : {x : X} → isEmpty {x} {x} []
 
-    -- emptyPath : {x y : A} → Σ (x ↝* y) isEmpty ≃ (x ≡ y)
+    -- emptyPath : {x y : X} → Σ (x ↝* y) isEmpty ≃ (x ≡ y)
     -- emptyPath {x} {y} = isoToEquiv e
       -- where
-      -- f : {y : A} → Σ (x ↝* y) isEmpty → x ≡ y
+      -- f : {y : X} → Σ (x ↝* y) isEmpty → x ≡ y
       -- f (.[] , empty[]) = refl
-      -- g : {y : A} → x ≡ y → Σ (x ↝* y) isEmpty
+      -- g : {y : X} → x ≡ y → Σ (x ↝* y) isEmpty
       -- g = J (λ y p → Σ (x ↝* y) isEmpty) ([] , empty[])
       -- e : Iso (Σ (x ↝* y) isEmpty) (x ≡ y)
       -- Iso.fun e = f
@@ -227,6 +241,8 @@ module FreePregroupoid where
     p ·! [] = p
     p ·! (q ∷+ a) = (p ·! q) ∷+ a
     p ·! (q ∷- a) = (p ·! q) ∷- a
+
+    _·?_ = _·!_
 
 ---
 --- The free higher groupoid
