@@ -264,6 +264,18 @@ module FreePregroupoid where
     lUnit (p ∷+ a) = cong (λ p → p ∷+ a) (lUnit p)
     lUnit (p ∷- a) = cong (λ p → p ∷- a) (lUnit p)
 
+module FreePregroupoid' where
+
+  infixl 5 _∷+_
+  infixl 5 _∷-_
+
+  data FreePregroupoid' {X : Type ℓ₀} (_↝_ : Graph X ℓ₁) : Graph X (ℓ-max ℓ₀ ℓ₁) where
+    [] : {x : X} → FreePregroupoid' _↝_ x x
+    _∷+_ : {x y z : X} → FreePregroupoid' _↝_ x y → y ↝ z → FreePregroupoid' _ x z
+    _∷-_ : {x y z : X} → FreePregroupoid' _↝_ x y → z ↝ y → FreePregroupoid' _ x z
+    invl : {x y z : X} (p : FreePregroupoid' _↝_ x y) (a : z ↝ y)  → (p ∷- a) ∷+ a ≡ p
+    invr : {x y z : X} (p : FreePregroupoid' _↝_ x y) (a : y ↝ z) → p ∷+ a ∷- a ≡ p
+
 ---
 --- The free higher groupoid
 ---
