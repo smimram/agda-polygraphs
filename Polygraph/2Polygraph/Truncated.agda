@@ -3,6 +3,8 @@
 module 2Polygraph.Truncated where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Path
 open import Cubical.Foundations.GroupoidLaws as GL
 open import Cubical.Foundations.HLevels
 open import Cubical.HITs.SetTruncation
@@ -18,18 +20,24 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
   open Operations P
   open FreeCategory
   open FreePregroupoid
+  open FreePregroupoid'
 
   ---
   --- elimination to 2-groupoids
   ---
 
-  -- elimPathSet :
-    -- (A : {x y : ⟦ P ⟧} → x ≡ y → Type ℓ) →
-    -- ({x y : ⟦ P ⟧} (p : x ≡ y) → isSet (A p)) →
-    -- ({x y : Σ₀} (p : x ↝? y) → A ∣ p ∣?) →
-    -- {x y : ⟦ P ⟧} (p : x ≡ y) → A p
-  -- elimPathSet A AS f {x} {y} p =
-    -- {!1Polygraph.elim !}
+  _↝¿_ = FreePregroupoid' _↝_
+
+  ∣_∣¿ : {x y : Σ₀} (p : x ↝¿ y) → _≡_ {A = ⟦ P ⟧} ∣ x ∣'' ∣ y ∣''
+  ∣_∣¿ {x = x} p = elim≃ (λ {y} _ → ∣ x ∣'' ≡ ∣ y ∣'') refl (λ a → compPathrEquiv ∣ a ∣₁') p
+
+  elimPathSet :
+    (A : {x y : ⟦ P ⟧} → x ≡ y → Type ℓ) →
+    ({x y : ⟦ P ⟧} (p : x ≡ y) → isSet (A p)) →
+    ({x y : Σ₀} (p : x ↝¿ y) → A ∣ p ∣¿) →
+    {x y : ⟦ P ⟧} (p : x ≡ y) → A p
+  elimPathSet A AS f {x} {y} p =
+    {!1Polygraph.elim !}
 
   whisk?? : {A : Type ℓ}
     (f₀ : Σ₀ → A)

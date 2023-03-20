@@ -304,6 +304,47 @@ module FreePregroupoid' where
     invl : {x y z : X} (p : FreePregroupoid' _↝_ x y) (a : z ↝ y)  → (p ∷- a) ∷+ a ≡ p
     invr : {x y z : X} (p : FreePregroupoid' _↝_ x y) (a : y ↝ z) → p ∷+ a ∷- a ≡ p
 
+  module _ {_↝_ : Graph X ℓ₁} where
+    private
+      _↝¿_ = FreePregroupoid' _↝_
+
+    elim :
+      {x : X} (A : {y : X} → x ↝¿ y → Type ℓ₂) →
+      (f[] : A ([] {x = x}))
+      (f∷+ : {y z : X} {p : x ↝¿ y} (_ : A p) (a : y ↝ z) → A (p ∷+ a))
+      (f∷- : {y z : X} {p : x ↝¿ y} (_ : A p) (a : z ↝ y) → A (p ∷- a)) →
+      (fl : {y z : X} {p : x ↝¿ y} (q : A p) (a : z ↝ y) → PathP (λ i → A (invl p a i)) (f∷+ (f∷- q a) a) q)
+      (fr : {y z : X} {p : x ↝¿ y} (q : A p) (a : y ↝ z) → PathP (λ i → A (invr p a i)) (f∷- (f∷+ q a) a) q)
+      {y : X} (p : x ↝¿ y) → A p
+    elim {x = x} A f[] f∷+ f∷- fl fr = e
+      where
+      e : {y : X} (p : x ↝¿ y) → A p
+      e [] = f[]
+      e (p ∷+ a) = f∷+ (e p) a
+      e (p ∷- a) = f∷- (e p) a
+      e (invl p a i) = fl (e p) a i
+      e (invr p a i) = fr (e p) a i
+
+    rec :
+      {x : X} {A : Type ℓ₂} →
+      (f[] : A)
+      (f∷+ : {y z : X} → A → y ↝ z → A)
+      (f∷- : {y z : X} → A → z ↝ y → A) →
+      (fl : {y z : X} (q : A) (a : z ↝ y) → f∷+ (f∷- q a) a ≡ q)
+      (fr : {y z : X} (q : A) (a : y ↝ z) → f∷- (f∷+ q a) a ≡ q)
+      {y : X} (p : x ↝¿ y) → A
+    rec {x = x} {A} f[] f∷+ f∷- fl fr = elim (λ _ → A) f[] f∷+ f∷- fl fr
+
+    elim≃ :
+      {x : X} (A : {y : X} → x ↝¿ y → Type ℓ₂) →
+      (f[] : A ([] {x = x}))
+      (f≃ : {y z : X} {p : x ↝¿ y} (a : y ↝ z) → A p ≃ A (p ∷+ a))
+      {y : X} (p : x ↝¿ y) → A p
+    elim≃ {x = x} A f[] f≃ p = elim A f[] (λ x a → equivFun (f≃ a) x) f∷- {!!} {!!} p
+      where
+      f∷- : {y z : X} {p : x ↝¿ y} (_ : A p) (a : z ↝ y) → A (p ∷- a)
+      f∷- x a = invEq (f≃ a) (subst A (sym (invl _ a)) x)
+
 ---
 --- The free higher groupoid
 ---
