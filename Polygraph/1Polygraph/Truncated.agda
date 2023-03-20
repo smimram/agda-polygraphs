@@ -69,16 +69,16 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
     where
     open FreeCategory
     open FreePregroupoid
-    lem : {x y : Σ₀} (p : x ↝? y) → cong (1Polygraph.rec f₁) ∣ p ∣? ≡ toPath f₁ p
+    lem : {x y : Σ₀} (p : x ↝? y) → cong (1Polygraph.rec f₁) ∣ p ∣? ≡ FreePregroupoid.toPath f₁ p
     lem [] = refl
     lem (p ∷+ a) =
       cong (1Polygraph.rec f₁) (∣ p ∣? ∙ ∣ a ∣₁) ≡⟨ congFunct (1Polygraph.rec f₁) ∣ p ∣? ∣ a ∣₁ ⟩
       cong (1Polygraph.rec f₁) ∣ p ∣? ∙ cong (1Polygraph.rec λ {x} {y} a → f₁ {x} {y} a) ∣ a ∣₁ ≡⟨ cong₂ _∙_ (lem p) refl ⟩
-      toPath f₁ p ∙ f₁ a ≡⟨ refl ⟩
-      toPath f₁ (p ∷+ a) ∎
+      FreePregroupoid.toPath f₁ p ∙ f₁ a ≡⟨ refl ⟩
+      FreePregroupoid.toPath f₁ (p ∷+ a) ∎
     lem (p ∷- a) =
       cong (1Polygraph.rec f₁) (∣ p ∣? ∙ (sym ∣ a ∣₁)) ≡⟨ congFunct (1Polygraph.rec f₁) ∣ p ∣? (sym ∣ a ∣₁) ⟩
       cong (1Polygraph.rec f₁) ∣ p ∣? ∙ cong (1Polygraph.rec λ {x} {y} a → f₁ {x} {y} a) (sym ∣ a ∣₁) ≡⟨ cong₂ _∙_ (lem p) refl ⟩
-      toPath f₁ (p ∷- a) ∎
+      FreePregroupoid.toPath f₁ (p ∷- a) ∎
     f₂' : {x y : Σ₀} (p q : x ↝? y) → cong (1Polygraph.rec f₁) ∣ p ∣? ≡ cong (1Polygraph.rec f₁) ∣ q ∣?
     f₂' p q = subst2 _≡_ (sym (lem p)) (sym (lem q)) (f₂ p q)

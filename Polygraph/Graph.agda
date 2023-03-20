@@ -136,11 +136,6 @@ module FreeCategory where
       {x y : X} → x ↝* y → P
     rec {P = P} P[] P∷ = elim (λ {_} {_} _ → P) (λ {x} → P[] x) P∷
 
-    -- mapping a function to paths to the elements of the list (geometric realization)
-    _* : {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) {x y : X} → x ↝* y → f₀ x ≡ f₀ y
-    (f *) [] = refl
-    (f *) (p ∷ a) = (f *) p ∙ f a
-
     ∷-destruct : {x z : X} (q : x ↝* z) → (Σ (x ≡ z) λ p → subst (λ x → x ↝* z) p q ≡ []) ⊎ Σ X (λ y → Σ (x ↝* y) λ p → Σ (y ↝ z) λ a → q ≡ p ∷ a)
     ∷-destruct {z = z} [] = inl (refl , substRefl {B = λ x → x ↝* z} [])
     ∷-destruct (q ∷ a) = inr (_ , q , a , refl)
@@ -181,6 +176,26 @@ module FreeCategory where
     lUnit : {x y : X} (p : x ↝* y) → p ≡ [] · p
     lUnit [] = refl
     lUnit (p ∷ a) = cong (λ p → p ∷ a) (lUnit p)
+
+    module _ {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) where
+      -- mapping a function to paths to the elements of the list (geometric realization)
+      _* : {x y : X} → x ↝* y → f₀ x ≡ f₀ y
+      _* [] = refl
+      _* (p ∷ a) = _* p ∙ f a
+
+      toPath = _*
+
+      toPath∙ : {x y z : X} (p : x ↝* y) (q : y ↝* z) → toPath (p · q) ≡ toPath p ∙ toPath q
+      toPath∙ p [] = rUnit (toPath p)
+      toPath∙ p (q ∷ a) =
+        toPath ((p · q) ∷ a) ≡⟨ refl ⟩
+        toPath (p · q) ∙ f a ≡⟨ cong (_∙ f a) (toPath∙ p q) ⟩
+        (toPath p ∙ toPath q) ∙ f a ≡⟨ sym (GL.assoc _ _ _) ⟩
+        toPath p ∙ toPath q ∙ f a ≡⟨ cong (_∙_ (toPath p)) refl ⟩
+        toPath p ∙ toPath (q ∷ a) ∎
+
+      toPath∙∙ :  {x y z w : X} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → toPath (p · q · r) ≡ toPath p ∙∙ toPath q ∙∙ toPath r
+      toPath∙∙ p q r = {!!} -- using the above
 
     toSC : {x y z : X} (p : x ↝* y) (a : y ↝ z) → x ↝+ z
     toSC [] a = [ a ]⁺
@@ -247,12 +262,25 @@ module FreePregroupoid where
     p ·? (q ∷+ a) = (p ·? q) ∷+ a
     p ·? (q ∷- a) = (p ·? q) ∷- a
 
-    _*? : {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) {x y : X} → x ↝? y → f₀ x ≡ f₀ y
-    (f *?) [] = refl
-    (f *?) (p ∷+ a) = (f *?) p ∙ f a
-    (f *?) (p ∷- a) = (f *?) p ∙ sym (f a)
+    module _ {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) where
+      _*? : {x y : X} → x ↝? y → f₀ x ≡ f₀ y
+      _*? [] = refl
+      _*? (p ∷+ a) = _*? p ∙ f a
+      _*? (p ∷- a) = _*? p ∙ sym (f a)
 
-    toPath = _*?
+      toPath = _*?
+
+      toPath∙∙ : {x y z w : X} (p : x ↝? y) (q : y ↝? z) (r : z ↝? w) → toPath (p ·? q ·? r) ≡ toPath p ∙∙ toPath q ∙∙ toPath r
+      toPath∙∙ = {!!}
+
+      module _ where
+        open FreeCategory
+        private
+          _↝*_ = FreeCategory _↝_
+
+        toPathOfFC : {x y : X} (p : x ↝* y) → _*? (ofFC p) ≡ (f *) p
+        toPathOfFC [] = refl
+        toPathOfFC (p ∷ a) = cong (_∙ (f a)) (toPathOfFC p)
 
     assoc : {x y z w : X} (p : x ↝? y) (q : y ↝? z) (r : z ↝? w) → (p ·? q) ·? r ≡ p ·? (q ·? r)
     assoc p q [] = refl
@@ -498,7 +526,8 @@ module FreeGroupoid where
     module _ where
       open import Cubical.HITs.SetTruncation as ST
 
-      _↝?_ = FreeSemicategory.FreeSemicategory _↝_
+      private
+        _↝?_ = FreeSemicategory.FreeSemicategory _↝_
 
       setTruncation : (x y : X) → ∥ x ↝! y ∥₂ ≃ x ↝? y
       setTruncation x y = {!!}
