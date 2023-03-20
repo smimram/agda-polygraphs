@@ -31,9 +31,6 @@ module Operations (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   _⇔*_ : {x y : Σ₀} (p q : x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
   _⇔*_ = FreePregroupoid _⇒w_
 
-module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
-  open Operations P
-
   whiskAssoc : {x'' x' x y y' y'' : Σ₀} (p' : x'' ↝* x') (p : x' ↝* x) (q : x ↝* y) (r : y ↝* y') (r' : y' ↝* y'') → p' · (p · q · r) · r' ≡ (p' · p) · q · (r · r')
   whiskAssoc p' p q r r' =
     p' · (p · q · r) · r'   ≡⟨ cong (λ p → p' · p) (FreeCategory.assoc p _ r') ⟩
@@ -45,3 +42,6 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   whisk* p [] q = []
   whisk* p (ϕ ∷+ whisk p' α r') r = whisk* p ϕ r ·? [≡ whiskAssoc p p' _ r' r ]? ·? [ whisk (p · p') α (r' · r) ]+ ·? [≡ sym (whiskAssoc p p' _ r' r) ]?
   whisk* p (ϕ ∷- whisk p' α r') r = whisk* p ϕ r ·? [≡ whiskAssoc p p' _ r' r ]? ·? [ whisk (p · p') α (r' · r) ]- ·? [≡ sym (whiskAssoc p p' _ r' r) ]?
+
+module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
+  open Operations P

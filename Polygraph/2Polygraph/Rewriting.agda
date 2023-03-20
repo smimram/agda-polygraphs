@@ -47,15 +47,14 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
     where
     open Graph.FreePregroupoid
     lem : (x : Σ₀) → ((y : Σ₀) → x ↝+ y → isC y) → isC x
-    lem = {!!}
-    -- lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]?
-    -- lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]?
-    -- lem x ih ([] ∷ a) ([] ∷ b) = lc a b
-    -- lem x ih ([] ∷ a) (q ∷ b' ∷ b) with lem _ ih [ a ] (q ∷ b')
-    -- ... | _ , p' , q' , ap'⇔qq' with ih _ (toSC q b') q' [ b ]
-    -- ... | _ , p'' , q'' , q'p''⇔bq'' = _ , p' · p'' , q'' , [≡ sym (FreeCategory.assoc [ a ] p' p'') ∙ FreeCategory.lUnit _ ]? ·? whisk* [] ap'⇔qq' p'' ·? [≡ sym (FreeCategory.lUnit _) ∙ FreeCategory.assoc (q ∷ b') q' p'' ]? ·? whisk* (q · [ b' ]) q'p''⇔bq'' [] ·? [≡ sym (FreeCategory.assoc (q ∷ b') [ b ] q'') ]?
-    -- lem x ih (p ∷ a' ∷ a) ([] ∷ b) = {!!}
-    -- lem x ih (p ∷ a' ∷ a) (q ∷ b' ∷ b) = {!!}
+    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]?
+    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]?
+    lem x ih ([] ∷ a) ([] ∷ b) = lc a b
+    lem x ih ([] ∷ a) (q ∷ b' ∷ b) with lem _ ih [ a ] (q ∷ b')
+    ... | _ , p' , q' , ap'⇔qq' with ih _ (toSC q b') q' [ b ]
+    ... | _ , p'' , q'' , q'p''⇔bq'' = _ , p' · p'' , q'' , [≡ sym (FreeCategory.assoc [ a ] p' p'') ∙ FreeCategory.lUnit _ ]? ·? whisk* [] ap'⇔qq' p'' ·? [≡ sym (FreeCategory.lUnit _) ∙ FreeCategory.assoc (q ∷ b') q' p'' ]? ·? whisk* (q · [ b' ]) q'p''⇔bq'' [] ·? [≡ sym (FreeCategory.assoc (q ∷ b') [ b ] q'') ]?
+    lem x ih (p ∷ a' ∷ a) ([] ∷ b) = {!!}
+    lem x ih (p ∷ a' ∷ a) (q ∷ b' ∷ b) = {!!}
     -- -- lem x ih (x↝y₁ ∷ y₁↝y₁') (x↝y₂ ∷ y₂↝y₂') with lc x↝y₁ x↝y₂
     -- -- ... | z , y₁↝z , y₂↝z , x↝y₁↝z⇔x↝y₂↝z with ih _ [ x↝y₁ ]⁺ y₁↝y₁' y₁↝z
     -- -- ... | z₁ , y₁'↝z₁ , z↝z₁ , y₁↝y₁'↝z₁⇔y₁↝z↝z₁ with ih _ [ x↝y₂ ]⁺ (y₂↝z · z↝z₁) y₂↝y₂'
