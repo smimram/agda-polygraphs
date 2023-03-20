@@ -162,9 +162,15 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ∣∣?'comp : {x y z : Σ₀} (p : x ↝? y) (q : y ↝? z) → ∣ p ·? q ∣?' ≡ ∣ p ∣?' ∙ ∣ q ∣?'
   ∣∣?'comp p [] = rUnit _
   ∣∣?'comp p (q ∷+ a)=
-    ∣ p ·? (q ∷+ a) ∣?' ≡⟨ {!!} ⟩
+    ∣ p ·? (q ∷+ a) ∣?' ≡⟨ refl ⟩
+    ∣ (p ·? q) ∷+ a ∣?' ≡⟨ refl ⟩
+    cong ∣_∣' ∣ (p ·? q) ∷+ a ∣? ≡⟨ refl ⟩
+    cong ∣_∣' (∣ (p ·? q) ∣? ∙ ∣ a ∣₁) ≡⟨ congFunct ∣_∣' _ _ ⟩
+    cong ∣_∣' ∣ (p ·? q) ∣? ∙ ∣ a ∣₁' ≡⟨ cong (_∙ ∣ a ∣₁') (∣∣?'comp p q) ⟩
+    (∣ p ∣?' ∙ ∣ q ∣?') ∙ ∣ a ∣₁' ≡⟨ sym (GL.assoc _ _ _) ⟩
+    ∣ p ∣?' ∙ ∣ q ∣?' ∙ ∣ a ∣₁' ≡⟨ cong (_∙_ ∣ p ∣?') (sym (congFunct ∣_∣' _ _)) ⟩
     ∣ p ∣?' ∙ ∣ q ∷+ a ∣?' ∎
-  ∣∣?'comp p (q ∷- a) = {!!}
+  ∣∣?'comp p (q ∷- a) = {!!} -- similar as above
 
   ∣∣*'comp₃ : {x y z w : Σ₀} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → ∣ p · q · r ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*' ∙ ∣ r ∣*'
   ∣∣*'comp₃ p q r = ∣∣*'comp p (q · r) ∙ cong (_∙_ ∣ p ∣*') (∣∣*'comp q r)
