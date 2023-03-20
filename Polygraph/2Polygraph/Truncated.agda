@@ -28,13 +28,15 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁}} where
   -- elimPathSet A AS f {x} {y} p =
     -- {!1Polygraph.elim !}
 
+  
+
   rec2Groupoid :
     (A : Type ℓ)
     (GA : isGroupoid A)
     (f₀ : Σ₀ → A)
     (f₁ : {x y : Σ₀} (a : x ↝ y) → f₀ x ≡ f₀ y)
     (f₂ : {x y : Σ₀} (p q : x ↝? y) → FreePregroupoid.toPath f₁ p ≡ FreePregroupoid.toPath f₁ q) →
-    (f₃ : {x y : Σ₀} {p q : x ↝? y} (ϕ ψ : p ⇔? q) → {!!}) →
+    (f₃ : {x y : Σ₀} {p q : x ↝? y} (ϕ ψ : p ⇔? q) → FreePregroupoid.toPath {!!} ϕ ≡ FreePregroupoid.toPath {!!} ψ) →
     ∥ ⟦ P ⟧ ∥₃ → A
   rec2Groupoid A GA f₀ f₁ f₂ f₃ = {!!}
     -- rec→Gpd.fun GA (1Polygraph.rec f₁) λ x y p q → elimPathProp₂ (λ p q → cong (1Polygraph.rec f₁) p ≡ cong (1Polygraph.rec f₁) q) (λ p q → GA _ _ _ _) f₂' p q
