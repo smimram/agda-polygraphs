@@ -55,8 +55,8 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   whisk* : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (ϕ : q ⇔* q') (r : y ↝* y') → (p · q · r) ⇔* (p · q' · r)
   whisk* p [] q = []
-  whisk* p (ϕ ∷+ whisk p' α r') r = whisk* p ϕ r ·! [≡ whiskAssoc p p' _ r' r ]! ·! [ whisk (p · p') α (r' · r) ]+ ·! [≡ sym (whiskAssoc p p' _ r' r) ]!
-  whisk* p (ϕ ∷- whisk p' α r') r = whisk* p ϕ r ·! [≡ whiskAssoc p p' _ r' r ]! ·! [ whisk (p · p') α (r' · r) ]- ·! [≡ sym (whiskAssoc p p' _ r' r) ]!
+  whisk* p (ϕ ∷+ whisk p' α r') r = whisk* p ϕ r ·? [≡ whiskAssoc p p' _ r' r ]? ·? [ whisk (p · p') α (r' · r) ]+ ·? [≡ sym (whiskAssoc p p' _ r' r) ]?
+  whisk* p (ϕ ∷- whisk p' α r') r = whisk* p ϕ r ·? [≡ whiskAssoc p p' _ r' r ]? ·? [ whisk (p · p') α (r' · r) ]- ·? [≡ sym (whiskAssoc p p' _ r' r) ]?
 
   -- local confluence
   isLC : (x : Σ₀) → Type _
@@ -80,14 +80,18 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
   -- Newman's lemma
   newman : isWF Σ' → hasLC → hasC
-  newman wf lc {x = x} = induction (WF+ wf) {P = isC} (λ x ih → lem x ih) x
+  newman wf lc {x = x} = induction (WF+ wf) {P = isC} lem x
     where
-    lem : (x : Σ₀) → ((y : Σ₀) → y ↜+ x → isC y) → isC x
-    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]!
-    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]!
-    lem x ih (p ∷ a) (q ∷ b) = {!!}
-    -- lem x ih [] q = _ , q , [] , [≡ sym (·-unitr _) ]
-    -- lem x ih (x↝y ∷ p) [] = _ , [] , (x↝y ∷ p) , [≡ cong (λ p → x↝y ∷ p) (·-unitr p) ]
+    open Graph.FreePregroupoid
+    lem : (x : Σ₀) → ((y : Σ₀) → x ↝+ y → isC y) → isC x
+    lem x ih [] q = _ , q , [] , [≡ sym (FreeCategory.lUnit q) ]?
+    lem x ih (p ∷ a) [] = _ , [] , p ∷ a , [≡ cong (λ p → p ∷ a) (FreeCategory.lUnit p) ]?
+    lem x ih ([] ∷ a) ([] ∷ b) = lc a b
+    lem x ih ([] ∷ a) (q ∷ b' ∷ b) with lem _ ih [ a ] (q ∷ b')
+    ... | _ , p' , q' , ap'⇔qq' with ih _ (toSC q b') q' [ b ]
+    ... | _ , p'' , q'' , q'p''⇔bq'' = _ , p' · p'' , q'' , [≡ sym (FreeCategory.assoc [ a ] p' p'') ∙ FreeCategory.lUnit _ ]? ·? whisk* [] ap'⇔qq' p'' ·? [≡ sym (FreeCategory.lUnit _) ∙ FreeCategory.assoc (q ∷ b') q' p'' ]? ·? whisk* (q · [ b' ]) q'p''⇔bq'' [] ·? [≡ sym (FreeCategory.assoc (q ∷ b') [ b ] q'') ]?
+    lem x ih (p ∷ a' ∷ a) ([] ∷ b) = {!!}
+    lem x ih (p ∷ a' ∷ a) (q ∷ b' ∷ b) = {!!}
     -- lem x ih (x↝y₁ ∷ y₁↝y₁') (x↝y₂ ∷ y₂↝y₂') with lc x↝y₁ x↝y₂
     -- ... | z , y₁↝z , y₂↝z , x↝y₁↝z⇔x↝y₂↝z with ih _ [ x↝y₁ ]⁺ y₁↝y₁' y₁↝z
     -- ... | z₁ , y₁'↝z₁ , z↝z₁ , y₁↝y₁'↝z₁⇔y₁↝z↝z₁ with ih _ [ x↝y₂ ]⁺ (y₂↝z · z↝z₁) y₂↝y₂'
@@ -109,7 +113,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   ... | z , p' ∷ a , q' , p⇔q = ⊥.rec (ny (toSC p' a))
   ... | z , [] , q' , p⇔q with ∷-destruct q'
   ... | inr (_ , q'' , a , _) = ⊥.rec (ny (toSC q'' a))
-  ... | inl (pq , q'≡[]) = p⇔q ·! [≡ cong (λ q' → q · q') lem' ]!
+  ... | inl (pq , q'≡[]) = p⇔q ·? [≡ cong (λ q' → q · q') lem' ]?
     where
     lem : pq ≡ refl
     lem = S _ _ pq refl

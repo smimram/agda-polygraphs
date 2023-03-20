@@ -23,7 +23,7 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
   -- zig-zags are surjective on groupoid morphisms
   surjPath : {x y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → ∥ Σ (x ↝? y) (λ q → ∣ q ∣? ≡ p) ∥₁
   surjPath {x = x} p = elimPath (λ {y} p → ∥ Σ (x ↝? y) (λ q → ∣ q ∣? ≡ p) ∥₁) ∣ [] , refl ∣₁ (λ p a → propBiimpl→Equiv isPropPropTrunc isPropPropTrunc (PT.map (λ { (q , r) → q ∷+ a , cong (λ p → p ∙ ∣ a ∣₁) r })) (PT.map λ { (q , r) → q ∷- a , cong (λ p → p ∙ sym ∣ a ∣₁) r ∙ sym (assoc _ _ _) ∙ cong (_∙_ p) (rCancel ∣ a ∣₁) ∙ sym (rUnit _) })) p
-    where open FreePregroupoid
+    where open FreePregroupoid hiding (assoc)
 
   -- in order to show a property on paths, it is enough to show it on zig-zags
   elimPathProp :
@@ -53,26 +53,28 @@ module _ {P : 1Polygraph {ℓ₀} {ℓ₁}} where
       ) y p q
     ) x {y} p q
 
-  recSet :
+  -- recurrene to a groupoid
+  recGroupoid :
     (A : Type ℓ)
     (GA : isGroupoid A)
     (f₀ : Σ₀ → A)
     (f₁ : {x y : Σ₀} (a : x ↝ y) → f₀ x ≡ f₀ y)
     (f₂ : {x y : Σ₀} (p q : x ↝? y) → FreePregroupoid.toPath f₁ p ≡ FreePregroupoid.toPath f₁ q) →
     ∥ ⟦ P ⟧ ∥₂ → A
-  recSet A GA f₀ f₁ f₂ = rec→Gpd.fun GA (1Polygraph.rec f₁) λ x y p q → elimPathProp₂ (λ p q → cong (1Polygraph.rec f₁) p ≡ cong (1Polygraph.rec f₁) q) (λ p q → GA _ _ _ _) f₂' p q
+  recGroupoid A GA f₀ f₁ f₂ = rec→Gpd.fun GA (1Polygraph.rec f₁) λ x y p q → elimPathProp₂ (λ p q → cong (1Polygraph.rec f₁) p ≡ cong (1Polygraph.rec f₁) q) (λ p q → GA _ _ _ _) f₂' p q
     where
     open FreeCategory
     open FreePregroupoid
     lem : {x y : Σ₀} (p : x ↝? y) → cong (1Polygraph.rec f₁) ∣ p ∣? ≡ toPath f₁ p
     lem [] = refl
-    lem (p ∷+ a) = {!cong (1Polygraph.rec f₁) (∣ p ∣? ∙ ∣ a ∣₁) ≡
-      toPath f₁ (p ∷+ a)!}
-    lem (p ∷- a) = {!!}
-    -- lem (p ∷ a) =
-      -- cong (1Polygraph.rec f₁) ∣ p ∷ a ∣* ≡⟨ refl ⟩
-      -- cong (1Polygraph.rec f₁) (∣ p ∣* ∙ ∣ a ∣₁) ≡⟨ congFunct (1Polygraph.rec f₁) ∣ p ∣* ∣ a ∣₁ ⟩
-      -- cong (1Polygraph.rec f₁) ∣ p ∣* ∙ f₁ a ≡⟨ cong (_∙ f₁ a) (lem p) ⟩
-      -- (f₁ *) p ∙ f₁ a ∎
+    lem (p ∷+ a) =
+      cong (1Polygraph.rec f₁) (∣ p ∣? ∙ ∣ a ∣₁) ≡⟨ congFunct (1Polygraph.rec f₁) ∣ p ∣? ∣ a ∣₁ ⟩
+      cong (1Polygraph.rec f₁) ∣ p ∣? ∙ cong (1Polygraph.rec λ {x} {y} a → f₁ {x} {y} a) ∣ a ∣₁ ≡⟨ cong₂ _∙_ (lem p) refl ⟩
+      toPath f₁ p ∙ f₁ a ≡⟨ refl ⟩
+      toPath f₁ (p ∷+ a) ∎
+    lem (p ∷- a) =
+      cong (1Polygraph.rec f₁) (∣ p ∣? ∙ (sym ∣ a ∣₁)) ≡⟨ congFunct (1Polygraph.rec f₁) ∣ p ∣? (sym ∣ a ∣₁) ⟩
+      cong (1Polygraph.rec f₁) ∣ p ∣? ∙ cong (1Polygraph.rec λ {x} {y} a → f₁ {x} {y} a) (sym ∣ a ∣₁) ≡⟨ cong₂ _∙_ (lem p) refl ⟩
+      toPath f₁ (p ∷- a) ∎
     f₂' : {x y : Σ₀} (p q : x ↝? y) → cong (1Polygraph.rec f₁) ∣ p ∣? ≡ cong (1Polygraph.rec f₁) ∣ q ∣?
     f₂' p q = subst2 _≡_ (sym (lem p)) (sym (lem q)) (f₂ p q)

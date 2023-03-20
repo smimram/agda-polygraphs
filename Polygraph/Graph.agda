@@ -223,32 +223,29 @@ module FreePregroupoid where
 
   module _ {_↝_ : Graph X ℓ₁} where
     private
-      _↝!_ = FreePregroupoid _↝_
       _↝?_ = FreePregroupoid _↝_
 
-    [≡_]! : {x y : X} → x ≡ y → x ↝! y
-    [≡_]! {x = x} p = J (λ y _ → x ↝! y) [] p
+    [≡_]? : {x y : X} → x ≡ y → x ↝? y
+    [≡_]? {x = x} p = J (λ y _ → x ↝? y) [] p
 
-    [_]+ : {x y : X} (a : x ↝ y) → x ↝! y
+    [_]+ : {x y : X} (a : x ↝ y) → x ↝? y
     [ a ]+ = [] ∷+ a
 
-    [_]- : {y x : X} (a : y ↝ x) → x ↝! y
+    [_]- : {y x : X} (a : y ↝ x) → x ↝? y
     [ a ]- = [] ∷- a
 
     module _ where
       open FreeCategory
 
-      ofFC : {x y : X} → FreeCategory.T _↝_ x y → x ↝! y
+      ofFC : {x y : X} → FreeCategory.T _↝_ x y → x ↝? y
       ofFC [] = []
       ofFC (p ∷ a) = ofFC p ∷+ a
 
-    infixr 5 _·!_
-    _·!_ : {x y z : X} → x ↝! y → y ↝! z → x ↝! z
-    p ·! [] = p
-    p ·! (q ∷+ a) = (p ·! q) ∷+ a
-    p ·! (q ∷- a) = (p ·! q) ∷- a
-
-    _·?_ = _·!_
+    infixr 5 _·?_
+    _·?_ : {x y z : X} → x ↝? y → y ↝? z → x ↝? z
+    p ·? [] = p
+    p ·? (q ∷+ a) = (p ·? q) ∷+ a
+    p ·? (q ∷- a) = (p ·? q) ∷- a
 
     _*? : {A : Type ℓ} {f₀ : X → A} (f : {x y : X} → x ↝ y → f₀ x ≡ f₀ y) {x y : X} → x ↝? y → f₀ x ≡ f₀ y
     (f *?) [] = refl
@@ -256,6 +253,16 @@ module FreePregroupoid where
     (f *?) (p ∷- a) = (f *?) p ∙ sym (f a)
 
     toPath = _*?
+
+    assoc : {x y z w : X} (p : x ↝? y) (q : y ↝? z) (r : z ↝? w) → (p ·? q) ·? r ≡ p ·? (q ·? r)
+    assoc p q [] = refl
+    assoc p q (r ∷+ a) = cong (λ p → p ∷+ a) (assoc p q r)
+    assoc p q (r ∷- a) = cong (λ p → p ∷- a) (assoc p q r)
+
+    lUnit : {x y : X} (p : x ↝? y) → p ≡ [] ·? p
+    lUnit [] = refl
+    lUnit (p ∷+ a) = cong (λ p → p ∷+ a) (lUnit p)
+    lUnit (p ∷- a) = cong (λ p → p ∷- a) (lUnit p)
 
 ---
 --- The free higher groupoid
