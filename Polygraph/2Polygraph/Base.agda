@@ -5,11 +5,12 @@ module 2Polygraph.Base where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.GroupoidLaws as GL
+open import Cubical.Foundations.HLevels
 
 open import Graph
 open Graph.FreeCategory hiding (elim ; rec)
 open Graph.FreePregroupoid
-open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim ; elimPath)
+open import 1Polygraph renaming (⟦_⟧ to ⟦_⟧₁) hiding (module Operations ; rec ; elim ; elimPath ; elimProp)
 
 private variable
   ℓ ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
@@ -25,7 +26,7 @@ module Operations (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   open 1Polygraph.Operations Σ' public
 
   data _⇒w_ : {x y : Σ₀} → (x ↝* y) → (x ↝* y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    whisk  : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q · r) ⇒w (p · q' · r)
+    whisk : {x' x y y' : Σ₀} → (p : x' ↝* x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝* y') → (p · q · r) ⇒w (p · q' · r)
 
   infix 4 _⇔*_
 
@@ -48,15 +49,17 @@ module Operations (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   --- groupoid whiskering
   ---
 
+  infix 4 _⇒?_
+
   data _⇒?_ : {x y : Σ₀} → (x ↝? y) → (x ↝? y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    -- TODO: this is a bit naive, I think we need to quotient by aa⁻ = id
-    whisk? : {x' x y y' : Σ₀} → (p : x' ↝? x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝? y') → (p ·? ofFC q ·? r) ⇒? (p ·? ofFC q' ·? r)
+    whisk? : {x' x y y' : Σ₀} → (p : x' ↝? x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝? y') → p ·? ofFC q ·? r ⇒? p ·? ofFC q' ·? r
+    whiskUL : {x' x y y' : Σ₀} → (p : x' ↝? x) (a : y ↝ x) (q : x ↝? y') → p ·? [ a ]- ·? [ a ]+ ·? q ⇒? p ·? q
+    whiskUR : {x' x y y' : Σ₀} → (p : x' ↝? x) (a : x ↝ y) (q : x ↝? y') → p ·? [ a ]+ ·? [ a ]- ·? q ⇒? p ·? q
 
   infix 4 _⇔?_
 
   _⇔?_ : {x y : Σ₀} (p q : x ↝? y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂))
   _⇔?_ = FreePregroupoid _⇒?_
-
 
 module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   open Operations P
@@ -95,18 +98,21 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
   ∣∣?'comp : {x y z : Σ₀} (p : x ↝? y) (q : y ↝? z) → ∣ p ·? q ∣?' ≡ ∣ p ∣?' ∙ ∣ q ∣?'
   ∣∣?'comp p [] = rUnit _
   ∣∣?'comp p (q ∷+ a)=
-    ∣ p ·? (q ∷+ a) ∣?' ≡⟨ refl ⟩
-    ∣ (p ·? q) ∷+ a ∣?' ≡⟨ refl ⟩
-    cong ∣_∣' ∣ (p ·? q) ∷+ a ∣? ≡⟨ refl ⟩
+    ∣ p ·? (q ∷+ a) ∣?'                ≡⟨ refl ⟩
+    ∣ (p ·? q) ∷+ a ∣?'                ≡⟨ refl ⟩
+    cong ∣_∣' ∣ (p ·? q) ∷+ a ∣?       ≡⟨ refl ⟩
     cong ∣_∣' (∣ (p ·? q) ∣? ∙ ∣ a ∣₁) ≡⟨ congFunct ∣_∣' _ _ ⟩
-    cong ∣_∣' ∣ (p ·? q) ∣? ∙ ∣ a ∣₁' ≡⟨ cong (_∙ ∣ a ∣₁') (∣∣?'comp p q) ⟩
-    (∣ p ∣?' ∙ ∣ q ∣?') ∙ ∣ a ∣₁' ≡⟨ sym (GL.assoc _ _ _) ⟩
-    ∣ p ∣?' ∙ ∣ q ∣?' ∙ ∣ a ∣₁' ≡⟨ cong (_∙_ ∣ p ∣?') (sym (congFunct ∣_∣' _ _)) ⟩
-    ∣ p ∣?' ∙ ∣ q ∷+ a ∣?' ∎
+    cong ∣_∣' ∣ (p ·? q) ∣? ∙ ∣ a ∣₁'  ≡⟨ cong (_∙ ∣ a ∣₁') (∣∣?'comp p q) ⟩
+    (∣ p ∣?' ∙ ∣ q ∣?') ∙ ∣ a ∣₁'      ≡⟨ sym (GL.assoc _ _ _) ⟩
+    ∣ p ∣?' ∙ ∣ q ∣?' ∙ ∣ a ∣₁'        ≡⟨ cong (_∙_ ∣ p ∣?') (sym (congFunct ∣_∣' _ _)) ⟩
+    ∣ p ∣?' ∙ ∣ q ∷+ a ∣?'             ∎
   ∣∣?'comp p (q ∷- a) = {!!} -- similar as above
 
   ∣∣*'comp₃ : {x y z w : Σ₀} (p : x ↝* y) (q : y ↝* z) (r : z ↝* w) → ∣ p · q · r ∣*' ≡ ∣ p ∣*' ∙ ∣ q ∣*' ∙ ∣ r ∣*'
   ∣∣*'comp₃ p q r = ∣∣*'comp p (q · r) ∙ cong (_∙_ ∣ p ∣*') (∣∣*'comp q r)
+
+  ∣∣?'comp₃ : {x y z w : Σ₀} (p : x ↝? y) (q : y ↝? z) (r : z ↝? w) → ∣ p ·? q ·? r ∣?' ≡ ∣ p ∣?' ∙ ∣ q ∣?' ∙ ∣ r ∣?'
+  ∣∣?'comp₃ p q r = ∣∣?'comp p (q ·? r) ∙ cong (_∙_ ∣ p ∣?') (∣∣?'comp q r)
 
   ∣[]∣*' : {x y : Σ₀} (a : x ↝ y) → ∣ [ a ] ∣*' ≡ cong ∣_∣' ∣ a ∣₁
   ∣[]∣*' a = cong (cong ∣_∣') (sym (GL.lUnit _))
@@ -122,6 +128,15 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
   ∣ [] ∣** = refl
   ∣ ϕ ∷+ whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') ∣ α ∣₂ ∙ sym (∣∣*'comp₃ p _ r)
   ∣ ϕ ∷- whisk p α r ∣** = ∣ ϕ ∣** ∙ ∣∣*'comp₃ p _ r ∙ cong (λ q → ∣ p ∣*' ∙ q ∙ ∣ r ∣*') (sym ∣ α ∣₂) ∙ sym (∣∣*'comp₃ p _ r)
+
+  ∣_∣?* : {x y : Σ₀} {p q : x ↝? y} (ϕ : p ⇔? q) → ∣ p ∣?' ≡ ∣ q ∣?'
+  ∣ [] ∣?* = refl
+  ∣ ϕ ∷+ whisk? p α r ∣?* = ∣ ϕ ∣?* ∙ {!!} ∙ {!!}
+  ∣ ϕ ∷+ whiskUL p a q ∣?* = {!!}
+  ∣ ϕ ∷+ whiskUR p a q ∣?* = {!!}
+  ∣ ϕ ∷- whisk? p α r ∣?* = {!!}
+  ∣ ϕ ∷- whiskUL p a q ∣?* = {!!}
+  ∣ ϕ ∷- whiskUR p a q ∣?* = {!!}
 
   ---
   --- elimination
@@ -153,6 +168,23 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
       *P (A ∘ ∣_∣') f₁ (p ∷ a) ∎
     lem : PathP (λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ p ∣*) (cong (1Polygraph.elim (A ∘ ∣_∣') f₀ f₁) ∣ q ∣*)
     lem = subst2 (PathP λ i → PathP (λ j → cong (cong A) ∣ α ∣₂ i j) (f₀ x) (f₀ y)) (sym (lem' p)) (sym (lem' q)) (f₂ α)
+
+  elimSet :
+    {ℓ₂ : Level}
+    (A : ⟦ P ⟧ → Type ℓ₂)
+    (AS : (x : ⟦ P ⟧) → isSet (A x))
+    (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
+    (f₁ : {x y : Σ₀} (a : x ↝ y) → PathP (λ i → A ∣ ∣ a ∣₁ i ∣') (f₀ x) (f₀ y))
+    (x : ⟦ P ⟧) → A x
+  elimSet A AS f₀ f₁ x = elim A f₀ f₁ (λ α → isSet→SquareP (λ i j → AS _) _ _ _ _) x
+
+  elimProp :
+    {ℓ₂ : Level}
+    (A : ⟦ P ⟧ → Type ℓ₂)
+    (AP : (x : ⟦ P ⟧) → isProp (A x))
+    (f₀ : (x : Σ₀) → A ∣ ∣ x ∣ ∣')
+    (x : ⟦ P ⟧) → A x
+  elimProp A AP f₀ x = elimSet A (λ x → isProp→isSet (AP x)) f₀ (λ a → isProp→PathP (λ _ → AP _) _ _) x
 
   -- rec :
     -- {ℓ₂ : Level}
