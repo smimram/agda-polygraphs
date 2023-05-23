@@ -286,4 +286,4 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
 
     -- TODO: CR implies this more natural variant
     PCR : hasPCR
-    PCR = ?
+    PCR = {!!}

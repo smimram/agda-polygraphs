@@ -119,4 +119,12 @@ module _ {ℓ : Level} {P : 1Polygraph {ℓ} {ℓ}} {x : 1Polygraph.Σ₀ P} whe
     Iso.rightInv e p = funExt⁻ (implicitFunExt⁻ (cong fst gf)) p
     Iso.leftInv e p = funExt⁻ (implicitFunExt⁻ (cong fst fg)) p
 
-  -- pathPresentationProp : {y : Σ₀} → ∥ ∣ x ∣ ≡ ∣ y ∣ ∥₂ ≃ 
+  -- TODO: is should actually also work for set truncations...
+  pathPresentationProp : {y : Σ₀} → ∥ ∣ x ∣ ≡ ∣ y ∣ ∥₁ ≃ ∥ x ↝? y ∥₁
+  pathPresentationProp {y} = compEquiv (cong≃ ∥_∥₁ pathPresentation) lem
+    where
+    open FreePregroupoid
+    f : {y : Σ₀} → x ↝! y → ∥ x ↝? y ∥₁
+    f = FreeGroupoid.elimProp (λ {y} _ → ∥ x ↝? y ∥₁) (λ _ → isPropPropTrunc) ∣ [] ∣₁ (λ l a → PT.rec isPropPropTrunc (λ l → ∣ l ∷+ a ∣₁) l) λ l a → PT.rec isPropPropTrunc (λ l → ∣ l ∷- a ∣₁) l
+    lem : ∥ x ↝! y ∥₁ ≃ ∥ x ↝? y ∥₁
+    lem = propBiimpl→Equiv isPropPropTrunc isPropPropTrunc (PT.rec isPropPropTrunc f) (PT.map ofPG)

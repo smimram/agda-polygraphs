@@ -565,6 +565,13 @@ module FreeGroupoid where
       ofSC (p ∷⁺ a) = ofSC p ∷+ a
 
     module _ where
+      open FreePregroupoid
+      ofPG : {x y : X} → (FreePregroupoid.FreePregroupoid _↝_ x y) → x ↝! y
+      ofPG [] = []
+      ofPG (p ∷+ x) = ofPG p ∷+ x
+      ofPG (p ∷- x) = ofPG p ∷- x
+
+    module _ where
       open import Cubical.HITs.SetTruncation as ST
 
       private

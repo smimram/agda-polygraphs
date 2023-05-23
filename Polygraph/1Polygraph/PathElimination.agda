@@ -208,8 +208,7 @@ module _ {ℓ₀ ℓ₁ : Level} {P : 1Polygraph {ℓ₀} {ℓ₁}} where
 
   module _
     {x : Σ₀}
-    (A : {y : Σ₀}
-    (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type (ℓ-max ℓ₀ ℓ₁))
+    (A : {y : Σ₀} (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type (ℓ-max ℓ₀ ℓ₁))
     (Ar : A refl)
     (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (p ∙ ∣ a ∣₁))
     -- (Aa : {y z : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) (a : y ↝ z) → A p ≃ A (subst (λ n → ∣ x ∣ ≡ n) ∣ a ∣₁ p))
@@ -293,3 +292,16 @@ module _ {ℓ₀ ℓ₁ : Level} {P : 1Polygraph {ℓ₀} {ℓ₁}} where
       -- where
       -- lem : {!!}
       -- lem = {!cong snd (ϕ₃ a)!}
+
+  -- ---
+  -- --- The particular case where we are eliminating to a proposition
+  -- ---
+  -- elimPathProp : {x : Σ₀}
+    -- (A : {y : Σ₀} (p : _≡_ {A = ⟦ P ⟧} ∣ x ∣ ∣ y ∣) → Type (ℓ-max ℓ₀ ℓ₁))
+    -- (AP : {y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → isProp (A p))
+    -- (Ap : {y : Σ₀} (p : x ↝? y) → A ∣ p ∣?)
+    -- {y : Σ₀} (p : ∣ x ∣ ≡ ∣ y ∣) → A p
+  -- elimPathProp A AP Ap p = elimPath A (Ap []) (λ p a → propBiimpl→Equiv (AP _) (AP _) (λ x → {!!}) {!!}) p
+    -- where
+    -- open import Graph
+    -- open FreePregroupoid
