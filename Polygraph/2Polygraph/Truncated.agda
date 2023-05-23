@@ -7,6 +7,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Path
 open import Cubical.Foundations.GroupoidLaws as GL
 open import Cubical.Foundations.HLevels
+open import Cubical.HITs.PropositionalTruncation
 open import Cubical.HITs.SetTruncation
 open import Cubical.HITs.GroupoidTruncation
 
@@ -27,6 +28,9 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
   --- elimination to 2-groupoids
   ---
 
+  surj2Path : {x y : Σ₀} {p q : x ↝? y} (ϕ : ∣ p ∣?' ≡ ∣ q ∣?') → ∥ Σ (p ⇔? q) (λ ψ → ϕ ≡ ∣ ψ ∣?*) ∥₁
+  surj2Path = {!!}
+
   elim2PathProp :
     {ℓ : Level}
     (A : {x y : ⟦ P ⟧} {p q : x ≡ y} (ϕ : p ≡ q) → Type ℓ) →
@@ -46,6 +50,10 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
         λ y p → {!!}
       ) {!!} y p
     ) {!!} x y p
+
+  -- on veut la vriante de rec→Gpd.fun qui étant donnée f : A → B avec B 2-groupoide telle que
+  -- - ∀ p,q : x ≡ y on a f p ≡ f q
+  -- - ∀ α,β : p ≡ q on a cong f α ≡ cong f β
 
   -- _↝¿_ = FreePregroupoid' _↝_
 
@@ -78,7 +86,7 @@ module _ {P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}} where
 
   -- rec2Groupoid :
     -- (A : Type ℓ)
-    -- (GA : isGroupoid A)
+    -- (GA : is2Groupoid A)
     -- (f₀ : Σ₀ → A)
     -- (f₁ : {x y : Σ₀} (a : x ↝ y) → f₀ x ≡ f₀ y)
     -- (f₂ : {x y : Σ₀} {p q : x ↝* y} (α : p ⇒ q) → (f₁ *) p ≡ (f₁ *) q) →

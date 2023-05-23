@@ -52,7 +52,7 @@ module Operations (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   infix 4 _⇒?_
 
   data _⇒?_ : {x y : Σ₀} → (x ↝? y) → (x ↝? y) → Type (ℓ-max ℓ₀ (ℓ-max ℓ₁ ℓ₂)) where
-    whisk? : {x' x y y' : Σ₀} → (p : x' ↝? x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝? y') → p ·? ofFC q ·? r ⇒? p ·? ofFC q' ·? r
+    whisk?  : {x' x y y' : Σ₀} → (p : x' ↝? x) {q q' : x ↝* y} (α : q ⇒ q') (r : y ↝? y') → p ·? ofFC q ·? r ⇒? p ·? ofFC q' ·? r
     whiskUL : {x' x y y' : Σ₀} → (p : x' ↝? x) (a : y ↝ x) (q : x ↝? y') → p ·? [ a ]- ·? [ a ]+ ·? q ⇒? p ·? q
     whiskUR : {x' x y y' : Σ₀} → (p : x' ↝? x) (a : x ↝ y) (q : x ↝? y') → p ·? [ a ]+ ·? [ a ]- ·? q ⇒? p ·? q
 

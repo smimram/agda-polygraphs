@@ -90,6 +90,11 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
   hasHB : Type _
   hasHB = {x y : Σ₀} (p q : x ↝* y) → _≡_ {A = _≡_ {A = ⟦ P ⟧} ∣ x ∣'' ∣ y ∣''} ∣ p ∣*' ∣ q ∣*'
 
+
+  -- Church-Rosser for parallel zig-zags
+  hasPCR : Type _
+  hasPCR = {x y : Σ₀} (p q : x ↝? y) → ∣ p ∣?' ≡ ∣ q ∣?'
+
   -- local confluence implies coherence
   module _ (S₀ : isSet Σ₀) (WF : isWF Σ') (DR : hasDR Σ') (LC : hasLC) where
     private
@@ -278,3 +283,7 @@ module _ (P : 2Polygraph {ℓ₀} {ℓ₁} {ℓ₂}) where
           ∣ nz ∣*' ∙ (sym ∣ n' ∣*' ∙ ∣ n' ∣*')      ≡⟨ cong (_∙_ ∣ nz ∣*') (lCancel _) ⟩
           ∣ nz ∣*' ∙ refl                           ≡⟨ sym (rUnit _) ⟩
           ∣ nz ∣*'                                  ∎
+
+    -- TODO: CR implies this more natural variant
+    PCR : hasPCR
+    PCR = ?
