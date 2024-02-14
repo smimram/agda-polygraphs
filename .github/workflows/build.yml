@@ -68,7 +68,9 @@ jobs:
         export PATH=~/.cabal/bin:$PATH
         make
     - name: Generate website
-      run: make website
+      run: |
+        export PATH=~/.cabal/bin:$PATH
+        make website
     - name: Upload artifact
       id: upload-artifact
       uses: actions/upload-pages-artifact@v2
