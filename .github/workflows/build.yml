@@ -35,7 +35,7 @@ jobs:
         key: library-${{ runner.os }}-${{ env.GHC_VERSION }}-${{ env.CABAL_VERSION }}-${{ env.AGDA_BRANCH }}
     - name: Install cabal
       if: steps.cache-cabal.outputs.cache-hit != 'true'
-      uses: haskell/actions/setup@v2
+      uses: haskell-actions/setup@v2
       with:
         ghc-version: ${{ env.GHC_VERSION }}
         cabal-version: ${{ env.CABAL_VERSION }}
