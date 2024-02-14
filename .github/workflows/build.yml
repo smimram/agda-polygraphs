@@ -67,3 +67,23 @@ jobs:
       run: |
         export PATH=~/.cabal/bin:$PATH
         make
+    - name: Generate website
+      run: make website
+    - name: Upload artifact
+      id: upload-artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: website/
+
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3
