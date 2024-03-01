@@ -18,14 +18,18 @@ open import Cubical.Data.Unit renaming (Unit to ⊤)
 open import Cubical.Data.Empty hiding (elim ; rec)
 open import Cubical.Data.Sum hiding (elim ; rec)
 open import Cubical.Data.Sigma
+open import Cubical.Relation.Binary
 open import Cubical.Induction.WellFounded renaming
   (
-    Rel to Graph;
     Acc to isAcc;
     WellFounded to isWellFounded
   ) public
 
 induction = WFI.induction
+
+-- A graph is a relation on a type
+Graph : {ℓ : Level} (A : Type ℓ) (ℓ' : Level) → Type _
+Graph {ℓ} A ℓ' = Rel A A ℓ'
 
 private variable
   ℓ₀ ℓ₁ ℓ₂ ℓ : Level
