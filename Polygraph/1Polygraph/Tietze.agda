@@ -17,31 +17,38 @@ open import 1Polygraph.Base
 open 1Polygraph
 
 private variable
-  ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
+  ℓ ℓ₀ ℓ₁ ℓ₂ ℓ₃ : Level
 
 -- Presented set
 ⟦_⟧₀ : (P : 1Polygraph {ℓ₀} {ℓ₁}) → Type _
 ⟦ P ⟧₀ = ∥ ⟦ P ⟧ ∥₂
 
-module _ (P : 1Polygraph {ℓ₀} {ℓ₁}) where
+module _ (P : 1Polygraph {ℓ} {ℓ}) where
 
-  module _  (X : Over ℓ₀ (Σ₀ P)) where
+  module _  (L R : (Σ₀ P) → Type ℓ) where
 
-    expand₀ : 1Polygraph {ℓ₀} {ℓ₁}
-    Σ₀ expand₀ = Σ₀ P ⊎ ⟨ X ⟩
-    (expand₀ ↝ inl x) (inl y) = _↝_ P x y
-    (expand₀ ↝ inl x) (inr y) = ?
-    (expand₀ ↝ inr x) y = ⊥*
+    expand₀ : 1Polygraph {ℓ} {ℓ}
+    Σ₀ expand₀ = Σ₀ P ⊎ (Σ (Σ₀ P) L ⊎ Σ (Σ₀ P) R)
+    _↝_ expand₀ (inl x) (inl y) = _↝_ P x y
+    _↝_ expand₀ (inl x) (inr (inl y)) = {!!}
+    _↝_ expand₀ (inl x) (inr (inr y)) = {!fst y!}
+    _↝_ expand₀ (inr (inl x)) y = {!!}
+    _↝_ expand₀ (inr (inr x)) y = {!!}
 
-    expand₀-correct : ⟦ P ⟧₀ ≡ ⟦ expand₀ ⟧₀
-    expand₀-correct = ua (isoToEquiv e)
-      where
-      open Iso
-      e : Iso ⟦ P ⟧₀ ⟦ expand₀ ⟧₀
-      fun e = ST.map {!!}
-      inv e = {!!}
-      rightInv e = {!!}
-      leftInv e = {!!}
+    -- Σ₀ expand₀ = ? -- Σ₀ P ⊎ (⟨ {!Σ (Σ₀ P) L!} ⟩ ⊎ ⟨ {!!} ⟩)
+    -- (expand₀ ↝ inl x) (inl y) = {!!} --_↝_ P x y
+    -- (expand₀ ↝ inl x) (inr y) = {!!}
+    -- (expand₀ ↝ inr x) y = {!!} -- ⊥*
+
+    -- expand₀-correct : ⟦ P ⟧₀ ≡ ⟦ expand₀ ⟧₀
+    -- expand₀-correct = ua (isoToEquiv e)
+      -- where
+      -- open Iso
+      -- e : Iso ⟦ P ⟧₀ ⟦ expand₀ ⟧₀
+      -- fun e = ST.map {!!}
+      -- inv e = {!!}
+      -- rightInv e = {!!}
+      -- leftInv e = {!!}
 
 -- expand₁ : (P : 1Polygraph {ℓ₀} {ℓ₁}) (R : Σ₀ P → Σ₀ P → {!!}) → 1Polygraph {ℓ₀} {ℓ₁}
 -- expand₁ = {!!}
