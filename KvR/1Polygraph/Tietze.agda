@@ -6,7 +6,7 @@
 
 module 1Polygraph.Tietze where
 
-open import Cubical.Foundations.Everything
+open import Cubical.Foundations.Prelude
 open import Cubical.Data.Empty
 open import Cubical.Data.Sum
 open import Cubical.HITs.SetTruncation as ST
