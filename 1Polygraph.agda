@@ -160,10 +160,10 @@ module _ (P : Polygraph {ℓ}) where
 
   cell-pres = pres-cell
 
-  -- There is a cell between any two elements of the presented set
-  -- TODO: we would need Kraus-von Raummer for this
-  coh-cell : {(x , y) : 0sphere} (p : ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂) → ∥ cell (x , y) ∥₁
-  coh-cell p = PT.elim (λ _ → isPropPropTrunc) (λ p → {!!}) (invEq propTrunc≃Trunc1 ((Iso.fun (PathIdTruncIso 1) (cong (equivFun setTrunc≃Trunc2) p))))
+  -- -- There is a cell between any two elements of the presented set
+  -- -- TODO: we would need Kraus-von Raummer for this
+  -- coh-cell : {(x , y) : 0sphere} (p : ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂) → ∥ cell (x , y) ∥₁
+  -- coh-cell p = PT.elim (λ _ → isPropPropTrunc) (λ p → {!!}) (invEq propTrunc≃Trunc1 ((Iso.fun (PathIdTruncIso 1) (cong (equivFun setTrunc≃Trunc2) p))))
 
   -- Any element of the presented set has a representative
   has-repr : (x : ∥ pres ∥₂) → ∥ Σ (pred P) (λ y → ∣ pres-pred y ∣₂ ≡ x) ∥₁
@@ -263,72 +263,66 @@ tietze-correct (T1' P f g) = sym (tietze1-correct P f g)
 tietze-correct Tr = refl
 tietze-correct (Tt r s) = tietze-correct r ∙ tietze-correct s
 
-module _ where
-  private
-    postulate AC : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((a : A) → ∥ B a ∥₁) → ∥ ((a : A) → B a) ∥₁
+-- module _ where
+  -- private
+    -- postulate AC : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((a : A) → ∥ B a ∥₁) → ∥ ((a : A) → B a) ∥₁
 
-  tietze-complete : {P Q : Polygraph {ℓ}} → ∥ pres P ∥₂ ≡ ∥ pres Q ∥₂ → ∥ tietze P Q ∥₁
-  tietze-complete {ℓ = ℓ} {P = P} {Q = Q} p = ST-rec-fun isPropPropTrunc (λ f → ST-rec-fun isPropPropTrunc (λ g → {!!}) g) f
-    where
-    ST-rec-fun : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} → isProp C → ((A → B) → C) → (A → ∥ B ∥₁) → C
-    ST-rec-fun PC f f' = PT.rec PC f (AC f')
-    pres→pred : {P : Polygraph {ℓ}} → pres P → ∥ pred P ∥₁
-    pres→pred = pres-rec _ ∣_∣₁ (λ _ → isPropPropTrunc _ _)
-    pres→pred' : {P : Polygraph {ℓ}} → ∥ pres P ∥₂ → ∥ pred P ∥₁
-    pres→pred' = ST.rec (isProp→isSet isPropPropTrunc) pres→pred
+  -- tietze-complete : {P Q : Polygraph {ℓ}} → ∥ pres P ∥₂ ≡ ∥ pres Q ∥₂ → ∥ tietze P Q ∥₁
+  -- tietze-complete {ℓ = ℓ} {P = P} {Q = Q} p = ST-rec-fun isPropPropTrunc (λ f → ST-rec-fun isPropPropTrunc (λ g → {!!}) g) f
+    -- where
+    -- ST-rec-fun : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} → isProp C → ((A → B) → C) → (A → ∥ B ∥₁) → C
+    -- ST-rec-fun PC f f' = PT.rec PC f (AC f')
+    -- pres→pred : {P : Polygraph {ℓ}} → pres P → ∥ pred P ∥₁
+    -- pres→pred = pres-rec _ ∣_∣₁ (λ _ → isPropPropTrunc _ _)
+    -- pres→pred' : {P : Polygraph {ℓ}} → ∥ pres P ∥₂ → ∥ pred P ∥₁
+    -- pres→pred' = ST.rec (isProp→isSet isPropPropTrunc) pres→pred
     
-    f'' : pres P → ∥ pres Q ∥₂
-    f'' x = transport p ∣ x ∣₂
-    f' : pred P → ∥ pres Q ∥₂
-    f' x = f'' (pres-pred x)
-    f : pred P → ∥ pred Q ∥₁
-    -- f x = pres→pred' (f' x)
-    f x = pres→pred' (transport p ∣ pres-pred x ∣₂)
+    -- f'' : pres P → ∥ pres Q ∥₂
+    -- f'' x = transport p ∣ x ∣₂
+    -- f' : pred P → ∥ pres Q ∥₂
+    -- f' x = f'' (pres-pred x)
+    -- f : pred P → ∥ pred Q ∥₁
+    -- -- f x = pres→pred' (f' x)
+    -- f x = pres→pred' (transport p ∣ pres-pred x ∣₂)
 
-    -- F : (x : pred P) → ∥ Σ (pred Q) (λ y → transport p ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂) ∥₁
-    -- F x = {!!}
-
-    -- G : (x : pred Q) → ∥ Σ (pred P) (λ y → transport (sym p) ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂) ∥₁
-    -- G x = {!!}
-
-    lem : tietze P Q
-    lem = Tt (T0 P (pred Q) (λ y → fst (G y))) (Tt (Tt (T1 P' S S-cell) (Tt (T1 {!_!} {!!} {!!}) (T≡ {!!}))) (T0' Q (pred P) λ x → fst (F x)))
-      where
-      postulate F : (x : pred P) → Σ (pred Q) (λ y → transport p ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂)
-      postulate G : (y : pred Q) → Σ (pred P) (λ x → transport (sym p) ∣ pres-pred y ∣₂ ≡ ∣ pres-pred x ∣₂)
-      P' = tietze0 P (pred Q) (λ y → fst (G y))
+    -- lem : tietze P Q
+    -- lem = Tt (T0 P (pred Q) (λ y → fst (G y))) (Tt (Tt (T1 P' S S-cell) (Tt (T1 {!_!} {!!} {!!}) (T≡ {!!}))) (T0' Q (pred P) λ x → fst (F x)))
+      -- where
+      -- postulate F : (x : pred P) → Σ (pred Q) (λ y → transport p ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂)
+      -- postulate G : (y : pred Q) → Σ (pred P) (λ x → transport (sym p) ∣ pres-pred y ∣₂ ≡ ∣ pres-pred x ∣₂)
+      -- P' = tietze0 P (pred Q) (λ y → fst (G y))
+      -- -- S : 0sphere P' → Type ℓ
+      -- -- S (inl x , inl _) = ⊥*
+      -- -- S (inl x , inr y) = fst (F x) ≡ y
+      -- -- S (inr x , y) = ⊥*
+      -- -- S-cell : {s : 0sphere P'} → S s → cell P' s
+      -- -- S-cell {s = inl x , inr y} p = {!!}
       -- S : 0sphere P' → Type ℓ
-      -- S (inl x , inl _) = ⊥*
-      -- S (inl x , inr y) = fst (F x) ≡ y
-      -- S (inr x , y) = ⊥*
+      -- S (x , inl _) = ⊥*
+      -- S (inl x , inr y) = ⊥*
+      -- S (inr x , inr y) = gen Q (x , y)
       -- S-cell : {s : 0sphere P'} → S s → cell P' s
-      -- S-cell {s = inl x , inr y} p = {!!}
-      S : 0sphere P' → Type ℓ
-      S (x , inl _) = ⊥*
-      S (inl x , inr y) = ⊥*
-      S (inr x , inr y) = gen Q (x , y)
-      S-cell : {s : 0sphere P'} → S s → cell P' s
-      S-cell {s = inr x , inr y} a =
-        comp0 P' {y = inl (fst (G x))}
-        (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
-        {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
-        (cell-gen _ refl))
+      -- S-cell {s = inr x , inr y} a =
+        -- comp0 P' {y = inl (fst (G x))}
+        -- (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
+        -- {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
+        -- (cell-gen _ refl))
       
-    g'' : pres Q → ∥ pres P ∥₂
-    g'' x = transport (sym p) ∣ x ∣₂
-    g' : pred Q → ∥ pres P ∥₂
-    g' x = g'' (pres-pred x)
-    g : pred Q → ∥ pred P ∥₁
-    g x = pres→pred' (g' x)
+    -- g'' : pres Q → ∥ pres P ∥₂
+    -- g'' x = transport (sym p) ∣ x ∣₂
+    -- g' : pred Q → ∥ pres P ∥₂
+    -- g' x = g'' (pres-pred x)
+    -- g : pred Q → ∥ pred P ∥₁
+    -- g x = pres→pred' (g' x)
 
-    g''-pres-pred : (x : pred Q) → g'' (pres-pred x) ≡ g' x
-    g''-pres-pred x = refl
+    -- g''-pres-pred : (x : pred Q) → g'' (pres-pred x) ≡ g' x
+    -- g''-pres-pred x = refl
 
-    g''-f'' : (x : pres P) → ST.rec isSetSetTrunc g'' (f'' x) ≡ ∣ x ∣₂
-    g''-f'' x = {!!}
+    -- g''-f'' : (x : pres P) → ST.rec isSetSetTrunc g'' (f'' x) ≡ ∣ x ∣₂
+    -- g''-f'' x = {!!}
 
-    g''-f' : (x : pred P) → ST.rec isSetSetTrunc g'' (f' x) ≡ ∣ pres-pred x  ∣₂
-    g''-f' x = {!!}
+    -- g''-f' : (x : pred P) → ST.rec isSetSetTrunc g'' (f' x) ≡ ∣ pres-pred x  ∣₂
+    -- g''-f' x = {!!}
 
 --- Functors between polygraphs
 ---
@@ -456,21 +450,21 @@ equivalence-pres {P = P} {Q = Q} E = ua (isoToEquiv e)
 tietze-correct' : {P Q : Polygraph {ℓ}} → tietze P Q → ∥ pres P ∥₂ ≡ ∥ pres Q ∥₂
 tietze-correct' T = equivalence-pres (preservation T)
 
-module _ where
-  private
-    postulate AC : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((a : A) → ∥ B a ∥₁) → ∥ ((a : A) → B a) ∥₁
+-- module _ where
+  -- private
+    -- postulate AC : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((a : A) → ∥ B a ∥₁) → ∥ ((a : A) → B a) ∥₁
 
-  AC2 : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {A' : Type ℓ'} {B : A → A' → Type ℓ''} → ((a : A) (a' : A') → ∥ B a a' ∥₁) → ∥ ((a : A) (a' : A') → B a a') ∥₁
-  AC2 f = AC λ a → AC (f a)
+  -- AC2 : {ℓ ℓ' ℓ'' : Level} {A : Type ℓ} {A' : Type ℓ'} {B : A → A' → Type ℓ''} → ((a : A) (a' : A') → ∥ B a a' ∥₁) → ∥ ((a : A) (a' : A') → B a a') ∥₁
+  -- AC2 f = AC λ a → AC (f a)
 
-  tietze-complete' : {P Q : Polygraph {ℓ}} → ∥ pres P ∥₂ ≡ ∥ pres Q ∥₂ → ∥ equivalence P Q ∥₁
-  tietze-complete' {P = P} {Q = Q} p = {!!}
-    -- PT.rec isPropPropTrunc (λ F₀ → {!!}) (AC2 F₀)
-    where
-    F₀ : (pres P → pres Q) → pred P → ∥ pred Q ∥₁
-    F₀ f x = pres-rec _ ∣_∣₁ (λ _ → isPropPropTrunc _ _) (f (pres-pred x))
-    F₁ : (f : pres P → pres Q) (F₀ : pred P → pred Q) {s : 0sphere P} → gen P s → ∥ gen Q (0Pol.functor-sphere F₀ s) ∥₁
-    F₁ f F₀ a = {!!}
+  -- tietze-complete' : {P Q : Polygraph {ℓ}} → ∥ pres P ∥₂ ≡ ∥ pres Q ∥₂ → ∥ equivalence P Q ∥₁
+  -- tietze-complete' {P = P} {Q = Q} p = {!!}
+    -- -- PT.rec isPropPropTrunc (λ F₀ → {!!}) (AC2 F₀)
+    -- where
+    -- F₀ : (pres P → pres Q) → pred P → ∥ pred Q ∥₁
+    -- F₀ f x = pres-rec _ ∣_∣₁ (λ _ → isPropPropTrunc _ _) (f (pres-pred x))
+    -- F₁ : (f : pres P → pres Q) (F₀ : pred P → pred Q) {s : 0sphere P} → gen P s → ∥ gen Q (0Pol.functor-sphere F₀ s) ∥₁
+    -- F₁ f F₀ a = {!!}
 
 inl-ret : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → (B → A) → A ⊎ B → A
 inl-ret f (inl x) = x
