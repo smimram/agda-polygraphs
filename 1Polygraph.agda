@@ -10,6 +10,7 @@ open import Cubical.Data.Empty
 open import Cubical.Data.Unit renaming (Unit* to ⊤*)
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.SetTruncation as ST
+open import Cubical.HITs.Truncation
 
 module 1Polygraph where
 
@@ -131,7 +132,7 @@ module _ (P : Polygraph {ℓ}) where
     comp0 f' (comp0 f (comp0 (comp0 g h) h')) ≡⟨ cong (comp0 f') (sym (comp0-assoc f _ _)) ⟩
     comp0 f' (comp0 (comp0 f (comp0 g h)) h') ∎
 
-  -- The presented type
+  -- The presented type (geometric realization)
   data pres : Type ℓ where
     pres-pred : pred P → pres
     disk      : {s : 0sphere} → gen P s → pres-pred (0sphere-src s) ≡ pres-pred (0sphere-tgt s)
@@ -158,6 +159,15 @@ module _ (P : Polygraph {ℓ}) where
   pres-cell (cons' a f) = sym (disk a) ∙ pres-cell f
 
   cell-pres = pres-cell
+
+  -- There is a cell between any two elements of the presented set
+  -- TODO: we would need Kraus-von Raummer for this
+  coh-cell : {(x , y) : 0sphere} (p : ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂) → ∥ cell (x , y) ∥₁
+  coh-cell p = PT.elim (λ _ → isPropPropTrunc) (λ p → {!!}) (invEq propTrunc≃Trunc1 ((Iso.fun (PathIdTruncIso 1) (cong (equivFun setTrunc≃Trunc2) p))))
+
+  -- Any element of the presented set has a representative
+  has-repr : (x : ∥ pres ∥₂) → ∥ Σ (pred P) (λ y → ∣ pres-pred y ∣₂ ≡ x) ∥₁
+  has-repr = ST.elim (λ _ → isProp→isSet isPropPropTrunc) (pres-elim (λ x → ∥ Σ (pred P) (λ y → ∣ pres-pred y ∣₂ ≡ ∣ x ∣₂) ∥₁) (λ x → ∣ x , refl ∣₁) λ x → toPathP (isPropPropTrunc _ _))
 
   ---
   --- Tietze transformations
