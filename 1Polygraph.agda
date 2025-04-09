@@ -310,23 +310,21 @@ module _ where
     f x = pres→pred' (transport p ∣ pres-pred x ∣₂)
 
     lem : tietze P Q
-    lem = Tt (T0 P (pred Q) (λ y → fst (G y))) (Tt (Tt (T1 P' S S-cell) (Tt (T1 {!!} {!!} {!!}) (T≡ {!!}))) (T0' Q (pred P) λ x → fst (F x)))
+    lem = Tt
+      (T0 P (pred Q) (λ y → fst (G y))) (Tt
+      (T1alt P' {X = Q1} f1 g1) (Tt
+      (T1 {!!} {!!} {!!}) (Tt
+      (T≡ {!!})
+      (T0' Q (pred P) λ x → fst (F x)))))
       where
       postulate F : (x : pred P) → Σ (pred Q) (λ y → transport p ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂)
       postulate G : (y : pred Q) → Σ (pred P) (λ x → transport (sym p) ∣ pres-pred y ∣₂ ≡ ∣ pres-pred x ∣₂)
       P' = tietze0 P (pred Q) (λ y → fst (G y))
-      -- S : 0sphere P' → Type ℓ
-      -- S (inl x , inl _) = ⊥*
-      -- S (inl x , inr y) = fst (F x) ≡ y
-      -- S (inr x , y) = ⊥*
-      -- S-cell : {s : 0sphere P'} → S s → cell P' s
-      -- S-cell {s = inl x , inr y} p = {!!}
-      S : 0sphere P' → Type ℓ
-      S (x , inl _) = ⊥*
-      S (inl x , inr y) = ⊥*
-      S (inr x , inr y) = gen Q (x , y)
-      S-cell : {s : 0sphere P'} → S s → cell P' s
-      S-cell {s = inr x , inr y} a =
+      Q1 = Σ (0sphere Q) (gen Q)
+      f1 : Q1 → 0sphere P'
+      f1 ((x , y) , _) = inr x , inr y
+      g1 : (x : Q1) → cell P' (f1 x)
+      g1 ((x , y) , a) =
         comp0 P' {y = inl (fst (G x))}
         (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
         {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
