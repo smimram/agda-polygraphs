@@ -5,6 +5,7 @@ open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Function
+open import Cubical.Foundations.Transport
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
@@ -273,7 +274,12 @@ tietze-correct Tr = refl
 tietze-correct (Tt r s) = tietze-correct r ∙ tietze-correct s
 
 poly≡ : {P Q : Polygraph {ℓ}} (f0 : pred P ≡ pred Q) (f1 : (s : 0sphere P) → gen P s ≡ gen Q (transport f0 (fst s) , transport f0 (snd s))) → P ≡ Q
-poly≡ f0 f1 = {!!}
+poly≡ {ℓ} {P = P} {Q = Q} f0 f1 = cong₂ polygraph f0 (toPathP lem)
+  where
+  lem' : gen P ∘ subst 0Pol.sphere (sym f0) ≡ gen Q
+  lem' = funExt (λ s → {!!} ∙ {!!})
+  lem : transport (λ i → 0Pol.sphere (f0 i) → Type ℓ) (gen P) ≡ gen Q
+  lem = fromPathP (funTypeTransp 0Pol.sphere (λ _ → Type ℓ) f0 (gen P)) ∙ lem'
 
 -- T1 under Grothendieck duality
 module _ {ℓ : Level} (P : Polygraph {ℓ}) (X : Type ℓ) (f : X → 0sphere P) (g : (x : X) → cell P (f x)) where
