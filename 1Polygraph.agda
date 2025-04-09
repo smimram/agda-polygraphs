@@ -359,17 +359,22 @@ module _ where
       f5 u = {!!}
       g5 : (x : Qrel) → cell Q' (f5 x)
       g5 x = {!!}
-      Q'' = tietze1alt Q' Qrel f5 {!!}
+      Q'' = tietze1alt Q' Qrel f5 g5
       Pgen = Σ (0sphere P) (gen P)
-      f4 : Pgen → 0sphere {!!}
+      f4 : Pgen → 0sphere Q''
       f4 ((x , y) , _) = inr x , inr y
       g4 : (x : Pgen) → cell Q'' (f4 x)
       g4 x = {!!}
       p3 : pred P ⊎ pred Q ≡ pred Q ⊎ pred P
       p3 = ua ⊎-swap-≃
-      Q''' = tietze1alt Q'' Pgen f4 {!g4!}
+      Q''' = tietze1alt Q'' Pgen f4 g4
       p4 : (s : 0sphere P''') → gen1alt P'' Qgen f2 g2 s ≡ gen1alt Q'' Pgen f4 g4 (transport p3 (fst s) , transport p3 (snd s))
-      p4 s = {!!}
+      p4 (x , y) = lem4
+        where
+        x' = transport p3 x
+        y' = transport p3 y
+        lem4 : gen P'' (x , y) ⊎ fiber f2 (x , y) ≡ gen Q'' (x' , y') ⊎ fiber f4 (x' , y')
+        lem4 = {!!}
       
     g'' : pres Q → ∥ pres P ∥₂
     g'' x = transport (sym p) ∣ x ∣₂
