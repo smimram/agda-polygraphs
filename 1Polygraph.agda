@@ -347,11 +347,11 @@ module _ where
       f2 : Qgen → 0sphere P''
       f2 ((x , y) , _) = inr x , inr y
       g2 : (x : Qgen) → cell P'' (f2 x)
-      g2 ((x , y) , a) = {!!}
-        -- comp0 P' {y = inl (fst (G x))}
-        -- (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
-        -- {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
-        -- (cell-gen _ refl))
+      g2 ((x , y) , a) =
+        comp0 P'' {y = inl (fst (G x))}
+          (cell-gen' _ (inl refl)) (comp0 _ {y = inl (fst (G y))}
+          {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
+          (cell-gen _ (inl refl)))
       P''' = tietze1alt P'' Qgen f2 g2
       Q' = tietze0 Q (pred P) (fst ∘ F)
       Qrel = Σ (0sphere Q) (cell Q)
@@ -373,7 +373,7 @@ module _ where
         where
         x' = transport p3 x
         y' = transport p3 y
-        lem4 : gen P'' (x , y) ⊎ fiber f2 (x , y) ≡ gen Q'' (x' , y') ⊎ fiber f4 (x' , y')
+        lem4 : (gen P' (x , y) ⊎ fiber f1 (x , y)) ⊎ fiber f2 (x , y) ≡ (gen Q' (x' , y') ⊎ fiber f5 (x' , y')) ⊎ fiber f4 (x' , y')
         lem4 = {!!}
       
     g'' : pres Q → ∥ pres P ∥₂
