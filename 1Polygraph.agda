@@ -263,6 +263,30 @@ tietze-correct (T1' P f g) = sym (tietze1-correct P f g)
 tietze-correct Tr = refl
 tietze-correct (Tt r s) = tietze-correct r ∙ tietze-correct s
 
+poly≡ : {P Q : Polygraph {ℓ}} (f0 : pred P ≡ pred Q) (f1 : (s : 0sphere P) → gen P s ≡ gen Q (transport f0 (fst s) , transport f0 (snd s))) → P ≡ Q
+poly≡ f0 f1 = {!!}
+
+-- T1 under Grothendieck duality
+module _ {ℓ : Level} (P : Polygraph {ℓ}) {X : Type ℓ} (f : X → 0sphere P) (g : (x : X) → cell P (f x)) where
+  gen1alt : 0sphere P → Type ℓ
+  gen1alt s = gen P s ⊎ fiber f s
+
+  tietze1alt : Polygraph {ℓ}
+  tietze1alt = polygraph (pred P) gen1alt
+
+  T1alt : tietze P tietze1alt
+  T1alt = subst (tietze P) p T1alt'
+    where
+    g' : {s : 0sphere P} → fiber f s → cell P s
+    g' (x , p) = subst (cell P) p (g x)
+    T1alt' : tietze P (tietze1 P (fiber f) g')
+    T1alt' = T1 P (fiber f) g'
+    p : tietze1 P (fiber f) g' ≡ tietze1alt
+    p = poly≡ refl lem
+      where
+      lem : (s : 0sphere (tietze1 P (fiber f) g')) → gen (tietze1 P (fiber f) g') s ≡ gen1alt (transport refl (fst s) , transport refl (snd s))
+      lem (x , y) = cong gen1alt (cong₂ {C = λ x y → 0sphere P} (λ x y → x , y) (sym (transportRefl x)) (sym (transportRefl y)))
+
 module _ where
   private
     postulate AC : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((a : A) → ∥ B a ∥₁) → ∥ ((a : A) → B a) ∥₁
