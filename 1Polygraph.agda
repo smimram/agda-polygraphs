@@ -4,6 +4,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Function
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
@@ -203,6 +204,14 @@ data tietze {ℓ : Level} : Polygraph {ℓ} → Polygraph {ℓ} → Type (ℓ-su
 T≡ : {P Q : Polygraph {ℓ}} → P ≡ Q → tietze P Q
 T≡ {P = P} p = subst (tietze P) p Tr
 
+tietze-sym : {P Q : Polygraph {ℓ}} → tietze P Q → tietze Q P
+tietze-sym (T0 _ X f) = T0' _ X f
+tietze-sym (T0' _ X f) = T0 _ X f
+tietze-sym (T1 _ f g) = T1' _ f g
+tietze-sym (T1' _ f g) = T1 _ f g
+tietze-sym Tr = Tr
+tietze-sym (Tt t t') = Tt (tietze-sym t') (tietze-sym t)
+
 module _ (P : Polygraph {ℓ}) where
 
   tietze0-correct : (X : Type ℓ) (f : X → pred P) → ∥ pres P ∥₂ ≡ ∥ pres (tietze0 P X f) ∥₂
@@ -267,7 +276,7 @@ poly≡ : {P Q : Polygraph {ℓ}} (f0 : pred P ≡ pred Q) (f1 : (s : 0sphere P)
 poly≡ f0 f1 = {!!}
 
 -- T1 under Grothendieck duality
-module _ {ℓ : Level} (P : Polygraph {ℓ}) {X : Type ℓ} (f : X → 0sphere P) (g : (x : X) → cell P (f x)) where
+module _ {ℓ : Level} (P : Polygraph {ℓ}) (X : Type ℓ) (f : X → 0sphere P) (g : (x : X) → cell P (f x)) where
   gen1alt : 0sphere P → Type ℓ
   gen1alt s = gen P s ⊎ fiber f s
 
@@ -286,6 +295,9 @@ module _ {ℓ : Level} (P : Polygraph {ℓ}) {X : Type ℓ} (f : X → 0sphere P
       where
       lem : (s : 0sphere (tietze1 P (fiber f) g')) → gen (tietze1 P (fiber f) g') s ≡ gen1alt (transport refl (fst s) , transport refl (snd s))
       lem (x , y) = cong gen1alt (cong₂ {C = λ x y → 0sphere P} (λ x y → x , y) (sym (transportRefl x)) (sym (transportRefl y)))
+
+  T1alt' : tietze tietze1alt P
+  T1alt' = tietze-sym T1alt
 
 module _ where
   private
@@ -312,23 +324,52 @@ module _ where
     lem : tietze P Q
     lem = Tt
       (T0 P (pred Q) (λ y → fst (G y))) (Tt
-      (T1alt P' {X = Q1} f1 g1) (Tt
-      (T1 {!!} {!!} {!!}) (Tt
-      (T≡ {!!})
-      (T0' Q (pred P) λ x → fst (F x)))))
+      (T1alt P' Prel f1 g1) (Tt
+      (T1alt P'' Qgen f2 g2) (Tt
+      (T≡ (poly≡ p3 p4)) (Tt
+      (T1alt' _ Pgen f4 g4) (Tt
+      (T1alt' _ Qrel f5 g5)
+      (T0' Q (pred P) λ x → fst (F x)))))))
       where
       postulate F : (x : pred P) → Σ (pred Q) (λ y → transport p ∣ pres-pred x ∣₂ ≡ ∣ pres-pred y ∣₂)
       postulate G : (y : pred Q) → Σ (pred P) (λ x → transport (sym p) ∣ pres-pred y ∣₂ ≡ ∣ pres-pred x ∣₂)
       P' = tietze0 P (pred Q) (λ y → fst (G y))
-      Q1 = Σ (0sphere Q) (gen Q)
-      f1 : Q1 → 0sphere P'
-      f1 ((x , y) , _) = inr x , inr y
-      g1 : (x : Q1) → cell P' (f1 x)
-      g1 ((x , y) , a) =
-        comp0 P' {y = inl (fst (G x))}
-        (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
-        {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
-        (cell-gen _ refl))
+      Prel = Σ (0sphere P) (cell P)
+      f1 : Prel → 0sphere P'
+      f1 u = inl x , inl y
+        where
+        x = fst (fst u)
+        y = snd (fst u)
+      g1 : (x : Prel) → cell P' (f1 x)
+      g1 x = {!!}
+      P'' = tietze1alt P' Prel f1 g1
+      Qgen = Σ (0sphere Q) (gen Q)
+      f2 : Qgen → 0sphere P''
+      f2 ((x , y) , _) = inr x , inr y
+      g2 : (x : Qgen) → cell P'' (f2 x)
+      g2 ((x , y) , a) = {!!}
+        -- comp0 P' {y = inl (fst (G x))}
+        -- (cell-gen' _ refl) (comp0 _ {y = inl (fst (G y))}
+        -- {!!} -- by the second component of G, both are in the same connected component and thus exists is an equality and thus a 1-cell
+        -- (cell-gen _ refl))
+      P''' = tietze1alt P'' Qgen f2 g2
+      Q' = tietze0 Q (pred P) (fst ∘ F)
+      Qrel = Σ (0sphere Q) (cell Q)
+      f5 : Qrel → 0sphere Q'
+      f5 u = {!!}
+      g5 : (x : Qrel) → cell Q' (f5 x)
+      g5 x = {!!}
+      Q'' = tietze1alt Q' Qrel f5 {!!}
+      Pgen = Σ (0sphere P) (gen P)
+      f4 : Pgen → 0sphere {!!}
+      f4 ((x , y) , _) = inr x , inr y
+      g4 : (x : Pgen) → cell Q'' (f4 x)
+      g4 x = {!!}
+      p3 : pred P ⊎ pred Q ≡ pred Q ⊎ pred P
+      p3 = ua ⊎-swap-≃
+      Q''' = tietze1alt Q'' Pgen f4 {!g4!}
+      p4 : (s : 0sphere P''') → gen1alt P'' Qgen f2 g2 s ≡ gen1alt Q'' Pgen f4 g4 (transport p3 (fst s) , transport p3 (snd s))
+      p4 s = {!!}
       
     g'' : pres Q → ∥ pres P ∥₂
     g'' x = transport (sym p) ∣ x ∣₂
